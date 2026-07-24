@@ -35,7 +35,7 @@ RunLog AI should become an AI running coach capable of:
 - Supabase Auth, PostgreSQL, and Storage
 - Server Actions and API routes
 - Mastra agents, tools, workflows, and memory
-- Vercel deployment
+- Google Cloud Platform hosting direction, with free-tier-friendly services evaluated before committing to production infrastructure
 
 ## MVP Roadmap
 
@@ -96,3 +96,25 @@ RunLog AI is planned as a spec-driven engineering project. The documentation is 
 - [Architecture decisions](architecture/decisions.md)
 
 Core implementation specs live in [`specs/`](specs), and weekly execution plans live in [`tasks/`](tasks). New feature specs should use the [feature spec template](specs/_template.md) so every implementation document covers scope, requirements, UI flows, database changes, API contracts, AI behavior, security, testing, and acceptance criteria.
+
+## Future Monorepo Layout
+
+This repository is prepared as a pnpm workspace without scaffolding full applications yet. The intended structure is:
+
+```text
+apps/
+  web/
+  mobile/
+packages/
+  analytics/
+  db/
+  types/
+  config/
+  ui/
+infra/
+  gcp/
+```
+
+Current implementation focus is web-first. `apps/web` is reserved for the future Next.js application. `apps/mobile` should be added later when the mobile strategy is ready. Shared logic should move into `packages/*` only when at least one app needs it.
+
+The preferred hosting direction is GCP, likely starting with free-tier-friendly managed services such as Cloud Run or Firebase Hosting/App Hosting depending on the final web architecture. Real deployment configs are intentionally deferred until the app shape is known.

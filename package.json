@@ -1,0 +1,18 @@
+{
+  "name": "runlog-ai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Spec-driven monorepo for RunLog AI web, mobile, and shared packages.",
+  "packageManager": "pnpm@11.17.0",
+  "scripts": {
+    "dev": "pnpm --recursive --parallel --if-present dev",
+    "build": "pnpm --recursive --if-present build",
+    "lint": "pnpm --recursive --if-present lint",
+    "test": "pnpm --recursive --if-present test",
+    "typecheck": "pnpm --recursive --if-present typecheck",
+    "format": "pnpm --recursive --if-present format"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

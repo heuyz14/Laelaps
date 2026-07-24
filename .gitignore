@@ -84,6 +84,21 @@ next-env.d.ts
 out
 .vercel
 
+# React Native and Expo
+.expo/
+.expo-shared/
+metro-cache/
+*.expo.ts
+android/.gradle/
+android/app/build/
+android/build/
+ios/Pods/
+ios/build/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcuserstate
+DerivedData/
+
 # Nuxt.js build / generate output
 .nuxt
 dist
@@ -124,6 +139,17 @@ dist
 
 # Firebase cache directory
 .firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+firebase-export-*/
+
+# Google Cloud local tooling and emulators
+.gcloud/
+gcloud-config/
+.datastore/
+pubsub-emulator-data/
+cloud_sql_proxy
 
 # TernJS port file
 .tern-port

@@ -12,7 +12,7 @@ Phase 5 prepares RunLog AI for deployment, demonstration, and portfolio review. 
 
 In scope:
 
-- Vercel deployment
+- GCP deployment target selection
 - Production Supabase configuration
 - OAuth redirect configuration
 - Environment variable documentation
@@ -26,6 +26,7 @@ Out of scope:
 - Paid infrastructure
 - Native mobile app
 - Public team collaboration features
+- Final cloud infrastructure automation
 
 ## Acceptance Criteria
 

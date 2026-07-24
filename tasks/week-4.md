@@ -15,9 +15,10 @@ Add coaching workflows, recovery analysis, observability, deployment, and portfo
 - Track AI usage records.
 - Add AI failure handling.
 - Add rate-limit strategy.
-- Configure Vercel deployment.
+- Select the initial GCP hosting target.
 - Configure production Supabase.
 - Configure production OAuth redirects.
+- Document environment variable setup for the selected GCP target.
 - Add deployment documentation.
 - Add portfolio demo script.
 - Run end-to-end smoke test.
