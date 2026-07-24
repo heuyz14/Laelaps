@@ -4,7 +4,7 @@ Status: Draft
 
 ## Executive Summary
 
-RunLog AI should prefer server actions for form-driven mutations and API routes for agent workflows or client-side fetches that need explicit HTTP contracts.
+Laelaps should prefer server actions for form-driven mutations and API routes for agent workflows or client-side fetches that need explicit HTTP contracts.
 
 ## API Principles
 

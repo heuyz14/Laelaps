@@ -1,8 +1,8 @@
 {
-  "name": "runlog-ai",
+  "name": "laelaps",
   "version": "0.0.0",
   "private": true,
-  "description": "Spec-driven monorepo for RunLog AI web, mobile, and shared packages.",
+  "description": "Spec-driven monorepo for Laelaps web, mobile, and shared packages.",
   "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "pnpm --recursive --parallel --if-present dev",

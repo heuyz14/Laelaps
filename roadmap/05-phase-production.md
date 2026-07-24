@@ -6,7 +6,7 @@ Depends on: Phases 1-4
 
 ## Executive Summary
 
-Phase 5 prepares RunLog AI for deployment, demonstration, and portfolio review. The focus is reliability, security, documentation, and a polished demo path.
+Phase 5 prepares Laelaps for deployment, demonstration, and portfolio review. The focus is reliability, security, documentation, and a polished demo path.
 
 ## Scope
 

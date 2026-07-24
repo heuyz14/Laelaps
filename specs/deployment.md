@@ -5,7 +5,7 @@ Phase: Production
 
 ## Executive Summary
 
-RunLog AI is expected to move toward Google Cloud Platform hosting. Production setup must document environment variables, OAuth redirects, migrations, smoke tests, and cost controls before any real deployment configuration is committed.
+Laelaps is expected to move toward Google Cloud Platform hosting. Production setup must document environment variables, OAuth redirects, migrations, smoke tests, and cost controls before any real deployment configuration is committed.
 
 ## Scope
 

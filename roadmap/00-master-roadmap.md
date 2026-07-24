@@ -1,4 +1,4 @@
-# RunLog AI Master Roadmap
+# Laelaps Master Roadmap
 
 Status: Draft  
 Owner: Project maintainer  
@@ -6,13 +6,13 @@ Audience: Engineering, portfolio reviewers, future collaborators
 
 ## Executive Summary
 
-RunLog AI is a full-stack running analytics and coaching platform. The product begins as a reliable run log with deterministic analytics, then adds AI agents that explain those analytics, answer training questions, and provide grounded coaching.
+Laelaps is a full-stack running analytics and coaching platform. The product begins as a reliable run log with deterministic analytics, then adds AI agents that explain those analytics, answer training questions, and provide grounded coaching.
 
 The key architectural rule is that AI does not calculate trusted metrics. The application owns calculations such as pace, weekly mileage, personal records, streaks, effort zones, and recovery indicators. AI agents receive those precomputed values through scoped tools and explain them in plain language.
 
 ## Product North Star
 
-RunLog AI should help a runner understand what happened, why it may have happened, and what to do next.
+Laelaps should help a runner understand what happened, why it may have happened, and what to do next.
 
 The first production version should support:
 
@@ -100,4 +100,4 @@ A feature is done when:
 
 ## Portfolio Narrative
 
-RunLog AI should read as a production-style engineering project, not a prototype. The strongest portfolio story is the separation between deterministic analytics and AI explanation: this shows practical AI system design, security awareness, product thinking, and incremental delivery.
+Laelaps should read as a production-style engineering project, not a prototype. The strongest portfolio story is the separation between deterministic analytics and AI explanation: this shows practical AI system design, security awareness, product thinking, and incremental delivery.

@@ -4,7 +4,7 @@ Status: Draft
 
 ## Executive Summary
 
-RunLog AI uses a layered architecture: Next.js handles UI and server interactions, Supabase provides auth and persistence, deterministic analytics modules compute metrics, and Mastra agents explain those metrics through scoped tools.
+Laelaps uses a layered architecture: Next.js handles UI and server interactions, Supabase provides auth and persistence, deterministic analytics modules compute metrics, and Mastra agents explain those metrics through scoped tools.
 
 ## High-Level Architecture
 

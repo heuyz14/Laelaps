@@ -1,12 +1,16 @@
-# RunLog AI
+# Laelaps
 
-RunLog AI is a full-stack running analytics and coaching platform for runners. It starts as a reliable run log and training dashboard, then layers in AI coaching that explains progress, answers training questions, detects trends, and helps runners make evidence-backed decisions.
+Laelaps is an AI running intelligence platform for athletes who want precise, evidence-backed training feedback. It starts as a reliable run log and analytics dashboard, then layers in AI coaching that explains progress, answers training questions, detects trends, and helps runners make better training decisions.
 
 The project is designed around a clear boundary: the application calculates metrics deterministically, and the AI explains those metrics. AI agents should not invent or calculate core statistics themselves.
 
+## Brand Note
+
+Laelaps is named after the mythological hound that always caught what it hunted. The product uses that idea in a grounded way: fast signal detection, precise analysis, and persistent pursuit of training goals. The tone should stay modern, technical, and athlete-focused rather than fantasy-themed.
+
 ## Vision
 
-RunLog AI should become an AI running coach capable of:
+Laelaps should become an AI running coach capable of:
 
 - Logging runs and maintaining training history
 - Tracking pace, mileage, effort, streaks, and personal records
@@ -79,7 +83,7 @@ Potential post-MVP features include Garmin sync, Strava sync, wearable integrati
 
 ## Engineering Documentation
 
-RunLog AI is planned as a spec-driven engineering project. The documentation is split into roadmap, specs, architecture, and implementation task tracks so each phase can be built incrementally and reviewed like a production system.
+Laelaps is planned as a spec-driven engineering project. The documentation is split into roadmap, specs, architecture, and implementation task tracks so each phase can be built incrementally and reviewed like a production system.
 
 - [Master roadmap](roadmap/00-master-roadmap.md)
 - [Foundation phase](roadmap/01-phase-foundation.md)

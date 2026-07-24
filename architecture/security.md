@@ -4,7 +4,7 @@ Status: Draft
 
 ## Executive Summary
 
-RunLog AI stores personal training data, goals, and AI-generated coaching notes. Security must focus on authentication, authorization, RLS, scoped AI tools, safe logging, and privacy-conscious data retention.
+Laelaps stores personal training data, goals, and AI-generated coaching notes. Security must focus on authentication, authorization, RLS, scoped AI tools, safe logging, and privacy-conscious data retention.
 
 ## Security Requirements
 

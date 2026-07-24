@@ -1,4 +1,4 @@
-# GCP Infrastructure Notes
+# Laelaps GCP Infrastructure Notes
 
 Status: Placeholder
 

@@ -4,7 +4,7 @@ Status: Living document
 
 ## ADR-001: Deterministic Analytics Before AI
 
-Decision: RunLog AI will compute trusted metrics in application code before exposing them to agents.
+Decision: Laelaps will compute trusted metrics in application code before exposing them to agents.
 
 Reasoning: Pace, volume, streaks, records, and recovery indicators need to be repeatable, testable, and inspectable. AI can explain these values but should not be trusted as the calculator.
 
