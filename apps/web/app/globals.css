@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 36 33% 98%;
+    --foreground: 220 18% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 18% 12%;
+    --primary: 18 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 18% 94%;
+    --secondary-foreground: 220 18% 12%;
+    --muted: 30 16% 93%;
+    --muted-foreground: 220 9% 42%;
+    --accent: 22 92% 94%;
+    --accent-foreground: 18 100% 33%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 30 12% 86%;
+    --input: 30 12% 86%;
+    --ring: 18 100% 50%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .auth-entrance {
+    animation: auth-entrance 520ms ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-entrance {
+      animation: none;
+    }
+  }
+}
+
+@keyframes auth-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

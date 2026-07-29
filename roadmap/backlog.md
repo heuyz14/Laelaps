@@ -21,10 +21,17 @@ Status: Living document
 - Saved Q&A threads
 - Evaluation suite for common coaching questions
 
+## Auth Enhancements
+
+- Magic link sign-in
+- Apple login
+- Account deletion flow
+- Data export flow
+
 ## Integrations
 
+- Strava sync as an optional connected activity source
 - Garmin sync
-- Strava sync
 - Apple Health import
 - Coros import
 - GPX/FIT file upload
@@ -63,3 +70,5 @@ Status: Living document
 - What data should be exportable or deletable for privacy requests?
 - What is the first mobile use case that justifies `apps/mobile`?
 - Which GCP target best fits the final web architecture and free-tier constraints?
+- Which connected activity source should come first: Strava, Garmin, Apple Health, or file import?
+- Should Strava ever be offered as a sign-in provider, or only as a connected data source?

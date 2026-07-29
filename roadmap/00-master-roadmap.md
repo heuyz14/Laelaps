@@ -36,6 +36,7 @@ The first production version should support:
 - Keep deployment compatible with practical free-tier limits.
 - Keep the repository monorepo-ready without scaffolding unused applications early.
 - Build web-first, then add mobile once shared domain boundaries are proven.
+- Separate account authentication from activity-source integrations.
 
 ## Repository Direction
 
@@ -66,6 +67,22 @@ Current implementation focus:
 
 The planning documents remain at the repository root because they describe the full product and engineering system rather than one app.
 
+## Account and Integration Strategy
+
+Laelaps accounts should not depend on one provider. Google OAuth is useful for quick sign-in, but it should not be the only way to create an account. Phase 1 should support email/password plus Google OAuth, with magic links and Apple login available as later additions if needed.
+
+Connected activity sources are a separate concern. Strava, Garmin, Apple Health, Coros, GPX, or FIT imports should be treated as optional integrations that attach data to an existing Laelaps account. Strava OAuth or an MCP-backed Strava connector should not replace Laelaps account authentication.
+
+The model is:
+
+```text
+Laelaps account login
+= identity, session, user-owned database rows, RLS boundary
+
+Connected activity sources
+= optional permissions to import or sync running data
+```
+
 ## Phase Map
 
 | Phase | Focus | Primary Output |
@@ -79,15 +96,17 @@ The planning documents remain at the repository root because they describe the f
 ## Implementation Order
 
 1. Establish pnpm workspace foundation and web app environment.
-2. Implement authentication and protected routing.
-3. Create database schema and RLS policies.
-4. Build run CRUD and dashboard views.
-5. Implement deterministic analytics modules.
-6. Extract analytics/types into `packages/*` only when web implementation proves the boundary.
-7. Add AI tools that only expose scoped analytics.
-8. Add agents for run summaries, historical analysis, recovery, and coaching.
-9. Add tests, observability, rate limiting, and production deployment.
-10. Add mobile app support after the web app proves shared package boundaries.
+2. Implement account authentication with email/password and Google OAuth.
+3. Implement protected routing and profile bootstrap.
+4. Create database schema and RLS policies.
+5. Build run CRUD and dashboard views.
+6. Implement deterministic analytics modules.
+7. Extract analytics/types into `packages/*` only when web implementation proves the boundary.
+8. Add AI tools that only expose scoped analytics.
+9. Add agents for run summaries, historical analysis, recovery, and coaching.
+10. Add tests, observability, rate limiting, and production deployment.
+11. Add optional activity-source integrations such as Strava after core account-owned data works.
+12. Add mobile app support after the web app proves shared package boundaries.
 
 ## Hosting Direction
 
