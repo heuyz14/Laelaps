@@ -29,6 +29,15 @@ Out of scope:
 - Autonomous plan changes without user review
 - Arbitrary database access
 - External wearable sync
+- Mobile app assistant UI
+
+## Monorepo Notes
+
+AI code can begin inside `apps/web` or a server-oriented source area if that keeps implementation simple. Extract shared pieces only when boundaries are clear:
+
+- `packages/analytics` should remain the source of trusted metrics.
+- `packages/types` can hold shared agent input/output schemas when stable.
+- Avoid creating a separate backend package until the deployment architecture requires it.
 
 ## Guardrails
 
@@ -36,6 +45,7 @@ Out of scope:
 - Tools must derive user identity from authenticated server context.
 - Agent outputs should cite the run, time window, or metric source they used.
 - Coaching advice should remain bounded, non-medical, and uncertainty-aware.
+- AI failures must not block core logging, dashboard, or history flows.
 
 ## Acceptance Criteria
 

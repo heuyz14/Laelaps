@@ -6,9 +6,9 @@ Audience: Engineering, portfolio reviewers, future collaborators
 
 ## Executive Summary
 
-Laelaps is a full-stack running analytics and coaching platform. The product begins as a reliable run log with deterministic analytics, then adds AI agents that explain those analytics, answer training questions, and provide grounded coaching.
+Laelaps is an AI running intelligence platform for athletes who want precise, evidence-backed training feedback. The product begins as a reliable run log with deterministic analytics, then adds AI agents that explain those analytics, answer training questions, detect trends, and provide grounded coaching.
 
-The key architectural rule is that AI does not calculate trusted metrics. The application owns calculations such as pace, weekly mileage, personal records, streaks, effort zones, and recovery indicators. AI agents receive those precomputed values through scoped tools and explain them in plain language.
+The key architectural rule is that AI does not calculate trusted metrics. The application owns calculations such as pace, weekly mileage, personal records, streaks, effort zones, recovery signals, and comparable-run analysis. AI agents receive those precomputed values through scoped tools and explain them in plain language.
 
 ## Product North Star
 
@@ -34,36 +34,90 @@ The first production version should support:
 - Prefer small, testable modules over broad application services.
 - Make every phase demonstrable.
 - Keep deployment compatible with practical free-tier limits.
+- Keep the repository monorepo-ready without scaffolding unused applications early.
+- Build web-first, then add mobile once shared domain boundaries are proven.
+
+## Repository Direction
+
+Laelaps is prepared as a pnpm workspace so the project can grow into a web app, mobile app, shared packages, and cloud infrastructure without reshaping the repository later.
+
+Target structure:
+
+```text
+apps/
+  web/
+  mobile/
+packages/
+  analytics/
+  db/
+  types/
+  config/
+  ui/
+infra/
+  gcp/
+```
+
+Current implementation focus:
+
+- `apps/web`: first application target, expected to become the Next.js web app.
+- `apps/mobile`: future mobile app target, intentionally deferred.
+- `packages/*`: shared code should be extracted only when reuse is real.
+- `infra/gcp`: future Google Cloud Platform notes and deployment assets.
+
+The planning documents remain at the repository root because they describe the full product and engineering system rather than one app.
 
 ## Phase Map
 
 | Phase | Focus | Primary Output |
 | --- | --- | --- |
-| 1 | Foundation | Auth, schema, RLS, app shell |
+| 1 | Foundation | pnpm workspace, web app foundation, auth, schema, RLS, app shell |
 | 2 | Core platform | Run CRUD, dashboard, goals, shoes |
-| 3 | Analytics | Deterministic metrics engine |
+| 3 | Analytics | Deterministic metrics engine and first shared package candidates |
 | 4 | AI platform | Mastra agents, tools, memory, workflows |
-| 5 | Production | Deployment, observability, docs, demo |
+| 5 | Production | GCP hosting selection, observability, docs, demo |
 
 ## Implementation Order
 
-1. Establish project foundation and environment.
+1. Establish pnpm workspace foundation and web app environment.
 2. Implement authentication and protected routing.
 3. Create database schema and RLS policies.
 4. Build run CRUD and dashboard views.
 5. Implement deterministic analytics modules.
-6. Add AI tools that only expose scoped analytics.
-7. Add agents for run summaries, historical analysis, recovery, and coaching.
-8. Add tests, observability, rate limiting, and production deployment.
+6. Extract analytics/types into `packages/*` only when web implementation proves the boundary.
+7. Add AI tools that only expose scoped analytics.
+8. Add agents for run summaries, historical analysis, recovery, and coaching.
+9. Add tests, observability, rate limiting, and production deployment.
+10. Add mobile app support after the web app proves shared package boundaries.
+
+## Hosting Direction
+
+Laelaps is expected to move toward Google Cloud Platform for hosting. The exact target should be chosen after the web app architecture is known.
+
+Candidate targets:
+
+- Cloud Run for a server-rendered web app or combined web/API service.
+- Firebase Hosting with Cloud Run when static hosting plus dynamic backend routes is useful.
+- Firebase App Hosting if the final Next.js app fits its supported workflow and cost model.
+
+Before production deployment:
+
+- Confirm current free-tier quotas.
+- Add budget alerts.
+- Document environment variables.
+- Keep generated cloud state and secrets out of git.
+- Avoid committing Docker, Terraform, or Cloud Build configuration until there is a concrete deployment need.
 
 ## Documentation System
 
-This project uses four documentation tracks:
+This project uses these documentation and implementation tracks:
 
 - `roadmap/`: phase sequencing, milestones, and delivery strategy
 - `specs/`: feature-level RFCs with scope, requirements, contracts, and acceptance criteria
 - `architecture/`: cross-cutting system design and decisions
 - `tasks/`: week-by-week implementation plans
+- `apps/`: future application workspaces
+- `packages/`: future shared code workspaces
+- `infra/`: future cloud infrastructure notes and deployment assets
 
 ## Spec Expansion Strategy
 

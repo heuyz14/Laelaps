@@ -10,6 +10,7 @@ Status: Living document
 - Goal progress charts
 - Export user data as CSV
 - Advanced filtering by date, distance, effort, and shoe
+- Web-first onboarding checklist
 
 ## AI Enhancements
 
@@ -35,6 +36,24 @@ Status: Living document
 - Email summaries
 - Social sharing
 - Public profile opt-in
+- Future `apps/mobile` scaffold after web package boundaries are stable
+
+## Package Candidates
+
+- `packages/analytics` for deterministic metric calculations
+- `packages/types` for stable domain types
+- `packages/db` for database helpers and generated types
+- `packages/config` for shared TypeScript, lint, or test configuration
+- `packages/ui` after reusable web/mobile UI needs are clear
+
+## Infrastructure Candidates
+
+- GCP Cloud Run deployment notes
+- Firebase Hosting plus Cloud Run evaluation
+- Firebase App Hosting evaluation
+- Budget alert checklist
+- Environment variable inventory
+- Smoke-test runbook
 
 ## Deferred Questions
 
@@ -42,3 +61,5 @@ Status: Living document
 - Should goals support multiple active races?
 - How much memory should agents retain by default?
 - What data should be exportable or deletable for privacy requests?
+- What is the first mobile use case that justifies `apps/mobile`?
+- Which GCP target best fits the final web architecture and free-tier constraints?
