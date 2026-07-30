@@ -48,7 +48,7 @@ export default async function DashboardPage({
   const runError = firstParam(params.run_error);
 
   return (
-    <AppShell title="Dashboard">
+    <AppShell title="Dashboard" activeNav="dashboard">
       <div className="grid gap-5 lg:gap-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>

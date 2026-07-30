@@ -24,7 +24,7 @@ export default async function GoalsPage({
   const goalError = firstParam(params.goal_error);
 
   return (
-    <AppShell title="Goals">
+    <AppShell title="Goals" activeNav="goals">
       <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <section className="rounded-lg border bg-card p-6 text-card-foreground">
           <div className="mb-5 flex items-center justify-between gap-4">

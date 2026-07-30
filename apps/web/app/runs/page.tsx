@@ -36,7 +36,7 @@ export default async function RunsPage({
   const runNotice = firstParam(params.run_notice);
 
   return (
-    <AppShell title="Run history">
+    <AppShell title="Run history" activeNav="runs">
       <div className="grid gap-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>

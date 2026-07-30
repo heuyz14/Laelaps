@@ -22,7 +22,7 @@ export default async function ShoesPage({
   const shoeError = firstParam(params.shoe_error);
 
   return (
-    <AppShell title="Shoes">
+    <AppShell title="Shoes" activeNav="shoes">
       <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <section className="rounded-lg border bg-card p-6 text-card-foreground">
           <div className="mb-5 flex items-center justify-between gap-4">

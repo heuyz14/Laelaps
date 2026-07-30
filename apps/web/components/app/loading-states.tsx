@@ -1,15 +1,17 @@
-import { AppShell } from "@/components/app/app-shell";
+import { AppShell, type AppShellNavKey } from "@/components/app/app-shell";
 import { cn } from "@/lib/utils";
 
 export function AppPageLoading({
   title,
+  activeNav,
   variant = "dashboard",
 }: {
   title: string;
+  activeNav?: AppShellNavKey;
   variant?: "dashboard" | "list" | "form";
 }) {
   return (
-    <AppShell title={title}>
+    <AppShell title={title} activeNav={activeNav}>
       <div className="grid gap-6" role="status" aria-label={`${title} loading`}>
         <div className="grid gap-3">
           <Skeleton className="h-8 w-64" />

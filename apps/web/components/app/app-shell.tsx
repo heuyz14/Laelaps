@@ -12,21 +12,31 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/runs", label: "Runs", icon: BarChart3 },
-  { href: "/shoes", label: "Shoes", icon: Footprints },
-  { href: "/goals", label: "Goals", icon: Goal },
+  {
+    key: "dashboard",
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  { key: "runs", href: "/runs", label: "Runs", icon: BarChart3 },
+  { key: "shoes", href: "/shoes", label: "Shoes", icon: Footprints },
+  { key: "goals", href: "/goals", label: "Goals", icon: Goal },
 ] as const;
 
-export function AppShell({
-  title,
-  eyebrow = "Laelaps",
-  children,
-}: {
+export type AppShellNavKey = (typeof navItems)[number]["key"];
+
+type AppShellProps = {
   title: string;
+  activeNav?: AppShellNavKey;
   eyebrow?: string;
   children: ReactNode;
-}) {
+};
+
+export function AppShell({
+  activeNav,
+  eyebrow = "Laelaps",
+  children,
+}: AppShellProps) {
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b bg-background/95 shadow-[0_1px_12px_rgba(25,27,31,0.05)] backdrop-blur">
@@ -50,7 +60,7 @@ export function AppShell({
               aria-label="Primary"
             >
               {navItems.map((item) => {
-                const isActive = item.label === title;
+                const isActive = item.key === activeNav;
 
                 return (
                   <Link

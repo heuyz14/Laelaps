@@ -44,7 +44,7 @@ export default async function RunDetailPage({
   const shoeName = getShoeName(run);
 
   return (
-    <AppShell title="Run detail">
+    <AppShell title="Run detail" activeNav="runs">
       <div className="grid gap-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>

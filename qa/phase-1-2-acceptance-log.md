@@ -74,7 +74,8 @@ Not fully verified without browser automation:
 
 Severity: Medium  
 Area: App shell navigation  
-Status: Open
+Status: Fixed
+Fixed: 2026-07-30 in local BUG-001 fix
 
 Observed by code review:
 
@@ -94,6 +95,12 @@ Impact:
 Suggested fix:
 
 - Pass an explicit active nav key into `AppShell`, for example `activeNav="runs"`, instead of inferring active state from page title.
+
+Resolution:
+
+- `AppShell` now accepts an explicit `activeNav` key and uses it for `aria-current` and active styling.
+- Dashboard, runs, nested run routes, shoes, goals, and their loading shells pass the expected active nav key.
+- Added a component regression test covering `"Run detail"` with `activeNav="runs"`.
 
 ### TECH-001: Supabase middleware import emits Edge-runtime build warning
 

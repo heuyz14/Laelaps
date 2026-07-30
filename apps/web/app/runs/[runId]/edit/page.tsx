@@ -34,7 +34,7 @@ export default async function EditRunPage({
   const runError = firstParam(paramsValue.run_error);
 
   return (
-    <AppShell title="Edit run">
+    <AppShell title="Edit run" activeNav="runs">
       <div className="mx-auto grid max-w-3xl gap-6">
         <Link
           href={`/runs/${run.id}`}

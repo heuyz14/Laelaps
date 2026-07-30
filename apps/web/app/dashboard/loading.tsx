@@ -1,5 +1,5 @@
 import { AppPageLoading } from "@/components/app/loading-states";
 
 export default function DashboardLoading() {
-  return <AppPageLoading title="Dashboard" />;
+  return <AppPageLoading title="Dashboard" activeNav="dashboard" />;
 }
