@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import {
+  isAuthenticatedEntryRoute,
+  isProtectedAppRoute,
+} from "@/lib/auth/route-guards";
 import { getPublicEnv } from "@/lib/env";
 
 export async function updateSession(request: NextRequest) {
@@ -36,10 +40,20 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  const pathname = request.nextUrl.pathname;
+
+  if (user && isAuthenticatedEntryRoute(pathname)) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/dashboard";
+    redirectUrl.search = "";
+
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (!user && isProtectedAppRoute(pathname)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/";
-    redirectUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname);
+    redirectUrl.searchParams.set("redirectedFrom", pathname);
 
     return NextResponse.redirect(redirectUrl);
   }

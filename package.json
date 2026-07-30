@@ -6,13 +6,20 @@
   "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "pnpm --recursive --parallel --if-present dev",
+    "web:dev": "pnpm --dir apps/web dev",
+    "web:stop": "kill $(lsof -ti tcp:3000) 2>/dev/null || true",
+    "web:restart": "pnpm web:stop && pnpm web:dev",
+    "web:clean": "rm -rf apps/web/.next apps/web/.next-build",
+    "web:fresh": "pnpm web:stop && pnpm web:clean && pnpm web:dev",
     "build": "pnpm --recursive --if-present build",
     "lint": "pnpm --recursive --if-present lint",
     "test": "pnpm --recursive --if-present test",
     "typecheck": "pnpm --recursive --if-present typecheck",
     "format": "pnpm --recursive --if-present format",
     "audit": "pnpm audit --audit-level moderate",
-    "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "verify": "pnpm format && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "web:health": "node scripts/check-web-health.mjs",
+    "web:ready": "pnpm web:health"
   },
   "engines": {
     "node": ">=20"

@@ -6,6 +6,20 @@ export async function ensureUserProfile(
   supabase: SupabaseClient,
   user: User,
 ): Promise<Profile> {
+  const { data: existingProfile, error: selectError } = await supabase
+    .from("profiles")
+    .select("id, display_name, preferred_unit")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (selectError) {
+    throw new Error("Unable to load user profile.");
+  }
+
+  if (existingProfile) {
+    return profileSchema.parse(existingProfile);
+  }
+
   const displayName =
     typeof user.user_metadata.full_name === "string" &&
     user.user_metadata.full_name.trim().length > 0
@@ -14,18 +28,11 @@ export async function ensureUserProfile(
 
   const { data, error } = await supabase
     .from("profiles")
-    .upsert(
-      {
-        id: user.id,
-        display_name: displayName,
-        preferred_unit: "metric",
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "id",
-        ignoreDuplicates: false,
-      },
-    )
+    .insert({
+      id: user.id,
+      display_name: displayName,
+      preferred_unit: "metric",
+    })
     .select("id, display_name, preferred_unit")
     .single();
 

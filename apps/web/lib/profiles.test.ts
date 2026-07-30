@@ -12,15 +12,25 @@ function createUser(metadata: User["user_metadata"]): User {
   } as User;
 }
 
-function createSupabaseClient(result: {
-  data: unknown;
-  error: { message: string } | null;
+function createSupabaseClient({
+  selectResult,
+  insertResult,
+}: {
+  selectResult: {
+    data: unknown;
+    error: { message: string } | null;
+  };
+  insertResult?: {
+    data: unknown;
+    error: { message: string } | null;
+  };
 }) {
   const calls: Array<{
+    operation: "select" | "insert";
     table: string;
-    payload: unknown;
-    options: unknown;
-    columns: string;
+    payload?: unknown;
+    columns?: string;
+    eq?: [string, string];
   }> = [];
 
   return {
@@ -28,20 +38,38 @@ function createSupabaseClient(result: {
     client: {
       from(table: string) {
         return {
-          upsert(payload: unknown, options: unknown) {
+          select(columns: string) {
+            const call = {
+              operation: "select" as const,
+              table,
+              columns,
+            };
+            calls.push(call);
+
+            return {
+              eq(column: string, value: string) {
+                calls[calls.length - 1].eq = [column, value];
+
+                return {
+                  maybeSingle: async () => selectResult,
+                };
+              },
+              single: async () => insertResult ?? selectResult,
+            };
+          },
+          insert(payload: unknown) {
             calls.push({
+              operation: "insert",
               table,
               payload,
-              options,
-              columns: "",
             });
 
             return {
               select(columns: string) {
-                calls[0].columns = columns;
+                calls[calls.length - 1].columns = columns;
 
                 return {
-                  single: async () => result,
+                  single: async () => insertResult,
                 };
               },
             };
@@ -53,19 +81,21 @@ function createSupabaseClient(result: {
 }
 
 describe("ensureUserProfile", () => {
-  it("upserts a user profile with a trimmed metadata display name", async () => {
+  it("returns an existing profile without writing on normal navigation", async () => {
     const supabase = createSupabaseClient({
-      data: {
-        id: userId,
-        display_name: "Bubba",
-        preferred_unit: "metric",
+      selectResult: {
+        data: {
+          id: userId,
+          display_name: "Bubba",
+          preferred_unit: "metric",
+        },
+        error: null,
       },
-      error: null,
     });
 
     const profile = await ensureUserProfile(
       supabase.client as never,
-      createUser({ full_name: "  Bubba  " }),
+      createUser({ full_name: "  Updated Name  " }),
     );
 
     expect(profile).toEqual({
@@ -73,16 +103,45 @@ describe("ensureUserProfile", () => {
       display_name: "Bubba",
       preferred_unit: "metric",
     });
-    expect(supabase.calls[0]).toMatchObject({
+    expect(supabase.calls).toEqual([
+      {
+        operation: "select",
+        table: "profiles",
+        columns: "id, display_name, preferred_unit",
+        eq: ["id", userId],
+      },
+    ]);
+  });
+
+  it("inserts a profile with a trimmed metadata display name when missing", async () => {
+    const supabase = createSupabaseClient({
+      selectResult: {
+        data: null,
+        error: null,
+      },
+      insertResult: {
+        data: {
+          id: userId,
+          display_name: "Bubba",
+          preferred_unit: "metric",
+        },
+        error: null,
+      },
+    });
+
+    const profile = await ensureUserProfile(
+      supabase.client as never,
+      createUser({ full_name: "  Bubba  " }),
+    );
+
+    expect(profile.display_name).toBe("Bubba");
+    expect(supabase.calls[1]).toMatchObject({
+      operation: "insert",
       table: "profiles",
       payload: {
         id: userId,
         display_name: "Bubba",
         preferred_unit: "metric",
-      },
-      options: {
-        onConflict: "id",
-        ignoreDuplicates: false,
       },
       columns: "id, display_name, preferred_unit",
     });
@@ -90,25 +149,33 @@ describe("ensureUserProfile", () => {
 
   it("uses a null display name when auth metadata does not provide one", async () => {
     const supabase = createSupabaseClient({
-      data: {
-        id: userId,
-        display_name: null,
-        preferred_unit: "metric",
+      selectResult: {
+        data: null,
+        error: null,
       },
-      error: null,
+      insertResult: {
+        data: {
+          id: userId,
+          display_name: null,
+          preferred_unit: "metric",
+        },
+        error: null,
+      },
     });
 
     await ensureUserProfile(supabase.client as never, createUser({}));
 
-    expect(supabase.calls[0].payload).toMatchObject({
+    expect(supabase.calls[1].payload).toMatchObject({
       display_name: null,
     });
   });
 
   it("throws a safe generic error when profile loading fails", async () => {
     const supabase = createSupabaseClient({
-      data: null,
-      error: { message: "database connection failed" },
+      selectResult: {
+        data: null,
+        error: { message: "database connection failed" },
+      },
     });
 
     await expect(
