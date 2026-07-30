@@ -17,8 +17,8 @@ Implement deterministic analytics, then expose those analytics to initial AI age
 - [x] Implement effort zone grouping.
 - [x] Implement comparable run selection.
 - [x] Add analytics unit tests.
-- [ ] Surface analytics outputs in the dashboard.
-- [ ] Decide whether dashboard analytics should query more than recent runs.
+- [x] Surface analytics outputs in the dashboard.
+- [x] Decide whether dashboard analytics should query more than recent runs.
 - [ ] Add Mastra directory structure.
 - [ ] Implement `getRunById`.
 - [ ] Implement `getRecentRuns`.

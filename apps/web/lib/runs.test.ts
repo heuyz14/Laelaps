@@ -4,6 +4,7 @@ import {
   formatDistance,
   formatDuration,
   formatPace,
+  getRunAnalytics,
   getAveragePaceSecondsPerKm,
   getRunDashboardStats,
   getShoeName,
@@ -33,6 +34,32 @@ describe("getRunDashboardStats", () => {
       runCount: 2,
       distanceMeters: 13000,
       durationSeconds: 4200,
+    });
+  });
+});
+
+describe("getRunAnalytics", () => {
+  it("normalizes database run rows into analytics metrics", () => {
+    const analytics = getRunAnalytics([
+      {
+        id: "run-1",
+        run_date: "2026-07-30",
+        distance_meters: 5000,
+        duration_seconds: 1500,
+        effort: 8,
+        avg_heart_rate: 168,
+      },
+    ]);
+
+    expect(analytics.summary).toMatchObject({
+      runCount: 1,
+      distanceMeters: 5000,
+      durationSeconds: 1500,
+      averagePaceSecondsPerKm: 300,
+    });
+    expect(analytics.effortZones.hard).toEqual({
+      runCount: 1,
+      distanceMeters: 5000,
     });
   });
 });

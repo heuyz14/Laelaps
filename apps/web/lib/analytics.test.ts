@@ -128,11 +128,48 @@ describe("buildRunAnalytics", () => {
         message: "3 hard efforts in the latest 7-day window.",
       },
       {
+        kind: "missing_easy_days",
+        severity: "low",
+        message: "No easy efforts logged in the latest 7-day window.",
+      },
+      {
         kind: "elevated_heart_rate",
         severity: "low",
         message: "Latest average heart rate is more than 10% above baseline.",
       },
     ]);
+  });
+
+  it("flags missing easy days when recent efforts are all moderate or hard", () => {
+    const analytics = buildRunAnalytics([
+      {
+        id: "moderate-1",
+        runDate: "2026-07-26",
+        distanceMeters: 5000,
+        durationSeconds: 1800,
+        effort: 5,
+      },
+      {
+        id: "hard-1",
+        runDate: "2026-07-27",
+        distanceMeters: 5000,
+        durationSeconds: 1600,
+        effort: 8,
+      },
+      {
+        id: "moderate-2",
+        runDate: "2026-07-28",
+        distanceMeters: 5000,
+        durationSeconds: 1750,
+        effort: 6,
+      },
+    ]);
+
+    expect(analytics.recoverySignals).toContainEqual({
+      kind: "missing_easy_days",
+      severity: "low",
+      message: "No easy efforts logged in the latest 7-day window.",
+    });
   });
 
   it("ignores invalid rows without crashing sparse optional data", () => {

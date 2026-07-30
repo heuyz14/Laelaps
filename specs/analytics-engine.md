@@ -1,6 +1,6 @@
 # Analytics Engine Spec
 
-Status: Draft  
+Status: Implemented  
 Phase: Analytics
 
 ## Executive Summary
@@ -99,6 +99,7 @@ Invalid data:
 
 ## Acceptance Criteria
 
-- UI and AI tools consume shared analytics outputs.
+- UI consumes shared analytics outputs.
+- AI tools must consume the same analytics outputs when Phase 4 adds tool wrappers.
 - Metrics are documented and tested.
 - No AI prompt is required to calculate statistics.

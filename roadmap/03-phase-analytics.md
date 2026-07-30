@@ -1,6 +1,6 @@
 # Phase 3: Analytics
 
-Status: In progress  
+Status: Complete  
 Target: Week 3, first half  
 Depends on: Phase 2
 
@@ -52,6 +52,6 @@ Likely related packages:
 
 - Analytics produce stable results for fixed input data.
 - Unit tests cover empty, sparse, mixed, and invalid data sets.
-- UI and AI tools consume the same analytics outputs.
+- UI consumes the typed analytics output; Phase 4 AI tools should consume the same output instead of recalculating metrics.
 - Metrics are documented with assumptions and units.
-- Package extraction is either completed or explicitly deferred with a reason.
+- Package extraction is explicitly deferred until AI or mobile becomes a second production consumer.

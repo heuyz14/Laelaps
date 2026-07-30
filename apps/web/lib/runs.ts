@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { buildRunAnalytics, type AnalyticsRun } from "@/lib/analytics";
+import {
+  buildRunAnalytics,
+  type AnalyticsRun,
+  type RunAnalytics,
+} from "@/lib/analytics";
 
 export type DashboardRun = {
   id: string;
@@ -43,6 +47,24 @@ export async function getRecentRuns(
 
   if (error) {
     throw new Error("Unable to load recent runs.");
+  }
+
+  return (data ?? []) as unknown as DashboardRun[];
+}
+
+export async function getAnalyticsRuns(
+  supabase: SupabaseClient,
+): Promise<DashboardRun[]> {
+  const { data, error } = await supabase
+    .from("runs")
+    .select(
+      "id, run_date, distance_meters, duration_seconds, avg_heart_rate, max_heart_rate, effort",
+    )
+    .order("run_date", { ascending: false })
+    .limit(1000);
+
+  if (error) {
+    throw new Error("Unable to load run analytics.");
   }
 
   return (data ?? []) as unknown as DashboardRun[];
@@ -104,13 +126,17 @@ export async function getRunById(
 }
 
 export function getRunDashboardStats(runs: DashboardRun[]): RunDashboardStats {
-  const analytics = buildRunAnalytics(runs.map(toAnalyticsRun));
+  const analytics = getRunAnalytics(runs);
 
   return {
     runCount: analytics.summary.runCount,
     distanceMeters: analytics.summary.distanceMeters,
     durationSeconds: analytics.summary.durationSeconds,
   };
+}
+
+export function getRunAnalytics(runs: DashboardRun[]): RunAnalytics {
+  return buildRunAnalytics(runs.map(toAnalyticsRun));
 }
 
 export function formatDistance(meters: number, unit: "metric" | "imperial") {

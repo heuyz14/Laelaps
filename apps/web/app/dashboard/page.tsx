@@ -1,10 +1,13 @@
 import {
   Activity,
   Clock3,
+  Flame,
   Footprints,
+  Gauge,
   Plus,
   Route,
   Target,
+  Trophy,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -12,6 +15,7 @@ import { createRun } from "@/app/dashboard/actions";
 import { AppShell, StatusMessage } from "@/components/app/app-shell";
 import { RunForm } from "@/components/runs/run-form";
 import { Button } from "@/components/ui/button";
+import type { PeriodMileage, RecoverySignal } from "@/lib/analytics";
 import { getAuthenticatedContext } from "@/lib/auth/session";
 import { countActiveGoals, getGoals } from "@/lib/goals";
 import { ensureUserProfile } from "@/lib/profiles";
@@ -20,8 +24,9 @@ import {
   formatDuration,
   formatPace,
   getAveragePaceSecondsPerKm,
+  getAnalyticsRuns,
+  getRunAnalytics,
   getRecentRuns,
-  getRunDashboardStats,
   getShoeName,
 } from "@/lib/runs";
 import { getActiveShoes, getShoes } from "@/lib/shoes";
@@ -35,17 +40,27 @@ export default async function DashboardPage({
   }>;
 }) {
   const { supabase, user } = await getAuthenticatedContext();
-  const [profile, recentRuns, shoes, goals] = await Promise.all([
+  const [profile, recentRuns, analyticsRuns, shoes, goals] = await Promise.all([
     ensureUserProfile(supabase, user),
     getRecentRuns(supabase),
+    getAnalyticsRuns(supabase),
     getShoes(supabase),
     getGoals(supabase),
   ]);
   const activeShoes = getActiveShoes(shoes);
-  const stats = getRunDashboardStats(recentRuns);
+  const analytics = getRunAnalytics(analyticsRuns);
+  const latestWeek = getLatestPeriod(analytics.weeklyMileage);
+  const latestMonth = getLatestPeriod(analytics.monthlyMileage);
+  const activeGoals = countActiveGoals(goals);
   const params = searchParams ? await searchParams : {};
   const runNotice = firstParam(params.run_notice);
   const runError = firstParam(params.run_error);
+  const effortZoneRows = [
+    { label: "Easy", zone: analytics.effortZones.easy },
+    { label: "Moderate", zone: analytics.effortZones.moderate },
+    { label: "Hard", zone: analytics.effortZones.hard },
+    { label: "Unknown", zone: analytics.effortZones.unknown },
+  ];
 
   return (
     <AppShell title="Dashboard" activeNav="dashboard">
@@ -74,28 +89,133 @@ export default async function DashboardPage({
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             icon={<Activity className="h-4 w-4" aria-hidden="true" />}
-            title="Recent runs"
-            value={String(stats.runCount)}
-            description="Latest saved runs."
+            title="Runs"
+            value={String(analytics.summary.runCount)}
+            description="Valid logged runs."
           />
           <MetricCard
             icon={<Route className="h-5 w-5" aria-hidden="true" />}
             title="Distance"
-            value={formatDistance(stats.distanceMeters, profile.preferred_unit)}
-            description="From recent runs."
+            value={formatDistance(
+              analytics.summary.distanceMeters,
+              profile.preferred_unit,
+            )}
+            description="Total logged volume."
           />
           <MetricCard
-            icon={<Clock3 className="h-5 w-5" aria-hidden="true" />}
-            title="Training time"
-            value={formatDuration(stats.durationSeconds)}
-            description="Logged duration."
+            icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
+            title="Average pace"
+            value={formatOptionalPace(
+              analytics.summary.averagePaceSecondsPerKm,
+              profile.preferred_unit,
+            )}
+            description="Aggregate pace."
           />
           <MetricCard
-            icon={<Target className="h-5 w-5" aria-hidden="true" />}
-            title="Active goals"
-            value={String(countActiveGoals(goals))}
-            description={`${activeShoes.length} active shoe${activeShoes.length === 1 ? "" : "s"}.`}
+            icon={<Trophy className="h-5 w-5" aria-hidden="true" />}
+            title="Longest run"
+            value={formatDistance(
+              analytics.summary.longestRunMeters,
+              profile.preferred_unit,
+            )}
+            description="Personal distance record."
           />
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <div className="grid gap-4 md:grid-cols-2">
+            <AnalyticsCard
+              icon={<Clock3 className="h-4 w-4" aria-hidden="true" />}
+              title="Latest week"
+              value={formatPeriodDistance(latestWeek, profile.preferred_unit)}
+              detail={formatPeriodDetail(latestWeek)}
+            />
+            <AnalyticsCard
+              icon={<Route className="h-4 w-4" aria-hidden="true" />}
+              title="Latest month"
+              value={formatPeriodDistance(latestMonth, profile.preferred_unit)}
+              detail={formatPeriodDetail(latestMonth)}
+            />
+            <AnalyticsCard
+              icon={<Flame className="h-4 w-4" aria-hidden="true" />}
+              title="Run streak"
+              value={`${analytics.streaks.currentRunDayStreak} day${analytics.streaks.currentRunDayStreak === 1 ? "" : "s"}`}
+              detail={`${analytics.streaks.currentRunWeekStreak} active week${analytics.streaks.currentRunWeekStreak === 1 ? "" : "s"}`}
+            />
+            <AnalyticsCard
+              icon={<Target className="h-4 w-4" aria-hidden="true" />}
+              title="Training context"
+              value={`${activeGoals} goal${activeGoals === 1 ? "" : "s"}`}
+              detail={`${activeShoes.length} active shoe${activeShoes.length === 1 ? "" : "s"}`}
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <section className="rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold">Effort zones</h2>
+                  <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                    Logged effort distribution.
+                  </p>
+                </div>
+                <Gauge className="h-4 w-4 text-primary" aria-hidden="true" />
+              </div>
+              <dl className="grid gap-3">
+                {effortZoneRows.map(({ label, zone }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between gap-4 rounded-lg border bg-background/70 px-3 py-2"
+                  >
+                    <dt className="text-sm font-medium">{label}</dt>
+                    <dd className="text-right text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">
+                        {zone.runCount}
+                      </span>{" "}
+                      /{" "}
+                      {formatDistance(
+                        zone.distanceMeters,
+                        profile.preferred_unit,
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            <section className="rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold">Recovery signals</h2>
+                  <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                    Recent load and effort checks.
+                  </p>
+                </div>
+                <Flame className="h-4 w-4 text-primary" aria-hidden="true" />
+              </div>
+              {analytics.recoverySignals.length > 0 ? (
+                <ul className="grid gap-3">
+                  {analytics.recoverySignals.map((signal) => (
+                    <li
+                      key={`${signal.kind}-${signal.message}`}
+                      className="rounded-lg border bg-background/70 px-3 py-2"
+                    >
+                      <span
+                        className={`text-xs font-semibold uppercase ${getRecoverySignalClassName(signal)}`}
+                      >
+                        {signal.severity}
+                      </span>
+                      <p className="mt-1 text-sm leading-5">{signal.message}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="rounded-lg border border-dashed bg-background/70 px-3 py-4 text-sm leading-6 text-muted-foreground">
+                  No recovery signals in the current training window.
+                </p>
+              )}
+            </section>
+          </div>
         </section>
 
         <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(25rem,0.42fr)_minmax(0,0.58fr)] xl:gap-5">
@@ -232,6 +352,33 @@ function MetricCard({
   );
 }
 
+function AnalyticsCard({
+  icon,
+  title,
+  value,
+  detail,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <article className="min-h-[8rem] rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        <div className="rounded-full bg-primary/10 p-2 text-primary">
+          {icon}
+        </div>
+      </div>
+      <p className="mt-4 text-2xl font-semibold leading-none tracking-normal">
+        {value}
+      </p>
+      <p className="mt-1.5 text-sm leading-5 text-muted-foreground">{detail}</p>
+    </article>
+  );
+}
+
 function EmptyState() {
   return (
     <div className="flex min-h-[25rem] flex-1 items-center justify-center rounded-xl border border-dashed bg-background/70 p-8 text-center">
@@ -252,4 +399,42 @@ function EmptyState() {
 
 function firstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function getLatestPeriod(periods: PeriodMileage[]) {
+  return periods.at(-1) ?? null;
+}
+
+function formatPeriodDistance(
+  period: PeriodMileage | null,
+  unit: "metric" | "imperial",
+) {
+  return formatDistance(period?.distanceMeters ?? 0, unit);
+}
+
+function formatPeriodDetail(period: PeriodMileage | null) {
+  if (!period) {
+    return "No runs logged.";
+  }
+
+  return `${period.period} / ${period.runCount} run${period.runCount === 1 ? "" : "s"}`;
+}
+
+function formatOptionalPace(
+  secondsPerKm: number | null,
+  unit: "metric" | "imperial",
+) {
+  return secondsPerKm ? formatPace(secondsPerKm, unit) : "N/A";
+}
+
+function getRecoverySignalClassName(signal: RecoverySignal) {
+  if (signal.severity === "high") {
+    return "text-destructive";
+  }
+
+  if (signal.severity === "medium") {
+    return "text-primary";
+  }
+
+  return "text-muted-foreground";
 }

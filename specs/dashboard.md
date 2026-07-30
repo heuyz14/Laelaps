@@ -90,3 +90,4 @@ Dashboard reads from:
 - Dashboard displays accurate deterministic metrics.
 - New users understand the next action.
 - Recent activity links to run detail.
+- Analytics panels show weekly mileage, monthly mileage, streaks, effort zones, and recovery signals from the analytics engine.

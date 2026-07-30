@@ -25,7 +25,11 @@ export type EffortZoneSummary = Record<
 >;
 
 export type RecoverySignal = {
-  kind: "volume_spike" | "hard_effort_cluster" | "elevated_heart_rate";
+  kind:
+    | "volume_spike"
+    | "hard_effort_cluster"
+    | "elevated_heart_rate"
+    | "missing_easy_days";
   severity: "low" | "medium" | "high";
   message: string;
 };
@@ -375,6 +379,17 @@ function getRecoverySignals(runs: AnalyticsRun[]): RecoverySignal[] {
       kind: "hard_effort_cluster",
       severity: hardEfforts.length >= 4 ? "high" : "medium",
       message: `${hardEfforts.length} hard efforts in the latest 7-day window.`,
+    });
+  }
+
+  const hasEasyRun = latestWindow.some(
+    (run) => getEffortZone(run.effort) === "easy",
+  );
+  if (latestWindow.length >= 3 && !hasEasyRun) {
+    signals.push({
+      kind: "missing_easy_days",
+      severity: "low",
+      message: "No easy efforts logged in the latest 7-day window.",
     });
   }
 
