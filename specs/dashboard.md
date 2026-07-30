@@ -43,6 +43,10 @@ Out of scope:
 - Cards should be compact and data-first.
 - Empty states should guide the user to add a first run.
 - Loading states should not shift layout significantly.
+- Dashboard run entry is modal-first. Permanent inline run forms should not be used on the dashboard unless the dashboard becomes explicitly form-first.
+- Browser zoom `100%` remains the baseline for layout tuning.
+- Dashboard content is grouped into `Overview`, `Training`, and `History` tabs below the welcome header.
+- Tab changes preserve state in the `tab` URL query parameter and should replace, not push, browser history entries.
 
 ## Responsive Layout Ratios
 

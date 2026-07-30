@@ -4,17 +4,15 @@ import {
   Flame,
   Footprints,
   Gauge,
-  Plus,
   Route,
-  Target,
   Trophy,
 } from "lucide-react";
 import Link from "next/link";
 
 import { createRun } from "@/app/dashboard/actions";
 import { AppShell, StatusMessage } from "@/components/app/app-shell";
-import { RunForm } from "@/components/runs/run-form";
-import { Button } from "@/components/ui/button";
+import { DashboardTabs } from "@/components/app/dashboard-tabs";
+import { AddRunDialog } from "@/components/runs/add-run-dialog";
 import type { PeriodMileage, RecoverySignal } from "@/lib/analytics";
 import { getAuthenticatedContext } from "@/lib/auth/session";
 import { countActiveGoals, getGoals } from "@/lib/goals";
@@ -26,7 +24,7 @@ import {
   getAveragePaceSecondsPerKm,
   getAnalyticsRuns,
   getRunAnalytics,
-  getRecentRuns,
+  getRuns,
   getShoeName,
 } from "@/lib/runs";
 import { getActiveShoes, getShoes } from "@/lib/shoes";
@@ -40,13 +38,15 @@ export default async function DashboardPage({
   }>;
 }) {
   const { supabase, user } = await getAuthenticatedContext();
-  const [profile, recentRuns, analyticsRuns, shoes, goals] = await Promise.all([
-    ensureUserProfile(supabase, user),
-    getRecentRuns(supabase),
-    getAnalyticsRuns(supabase),
-    getShoes(supabase),
-    getGoals(supabase),
-  ]);
+  const [profile, historyRuns, analyticsRuns, shoes, goals] = await Promise.all(
+    [
+      ensureUserProfile(supabase, user),
+      getRuns(supabase),
+      getAnalyticsRuns(supabase),
+      getShoes(supabase),
+      getGoals(supabase),
+    ],
+  );
   const activeShoes = getActiveShoes(shoes);
   const analytics = getRunAnalytics(analyticsRuns);
   const latestWeek = getLatestPeriod(analytics.weeklyMileage);
@@ -55,6 +55,7 @@ export default async function DashboardPage({
   const params = searchParams ? await searchParams : {};
   const runNotice = firstParam(params.run_notice);
   const runError = firstParam(params.run_error);
+  const overviewRuns = historyRuns.slice(0, 3);
   const effortZoneRows = [
     { label: "Easy", zone: analytics.effortZones.easy },
     { label: "Moderate", zone: analytics.effortZones.moderate },
@@ -75,249 +76,109 @@ export default async function DashboardPage({
               grounded in deterministic training data.
             </p>
           </div>
-          <Button
-            asChild
-            className="h-10 rounded-lg px-5 text-sm shadow-[0_12px_24px_rgba(252,76,2,0.16)] md:inline-flex"
-          >
-            <a href="#add-run">
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Add run
-            </a>
-          </Button>
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            icon={<Activity className="h-4 w-4" aria-hidden="true" />}
-            title="Runs"
-            value={String(analytics.summary.runCount)}
-            description="Valid logged runs."
-          />
-          <MetricCard
-            icon={<Route className="h-5 w-5" aria-hidden="true" />}
-            title="Distance"
-            value={formatDistance(
-              analytics.summary.distanceMeters,
-              profile.preferred_unit,
-            )}
-            description="Total logged volume."
-          />
-          <MetricCard
-            icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
-            title="Average pace"
-            value={formatOptionalPace(
-              analytics.summary.averagePaceSecondsPerKm,
-              profile.preferred_unit,
-            )}
-            description="Aggregate pace."
-          />
-          <MetricCard
-            icon={<Trophy className="h-5 w-5" aria-hidden="true" />}
-            title="Longest run"
-            value={formatDistance(
-              analytics.summary.longestRunMeters,
-              profile.preferred_unit,
-            )}
-            description="Personal distance record."
+          <AddRunDialog
+            action={createRun}
+            preferredUnit={profile.preferred_unit}
+            shoes={shoes}
           />
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-          <div className="grid gap-4 md:grid-cols-2">
-            <AnalyticsCard
-              icon={<Clock3 className="h-4 w-4" aria-hidden="true" />}
-              title="Latest week"
-              value={formatPeriodDistance(latestWeek, profile.preferred_unit)}
-              detail={formatPeriodDetail(latestWeek)}
-            />
-            <AnalyticsCard
-              icon={<Route className="h-4 w-4" aria-hidden="true" />}
-              title="Latest month"
-              value={formatPeriodDistance(latestMonth, profile.preferred_unit)}
-              detail={formatPeriodDetail(latestMonth)}
-            />
-            <AnalyticsCard
-              icon={<Flame className="h-4 w-4" aria-hidden="true" />}
-              title="Run streak"
-              value={`${analytics.streaks.currentRunDayStreak} day${analytics.streaks.currentRunDayStreak === 1 ? "" : "s"}`}
-              detail={`${analytics.streaks.currentRunWeekStreak} active week${analytics.streaks.currentRunWeekStreak === 1 ? "" : "s"}`}
-            />
-            <AnalyticsCard
-              icon={<Target className="h-4 w-4" aria-hidden="true" />}
-              title="Training context"
-              value={`${activeGoals} goal${activeGoals === 1 ? "" : "s"}`}
-              detail={`${activeShoes.length} active shoe${activeShoes.length === 1 ? "" : "s"}`}
-            />
-          </div>
+        {runNotice === "created" ? (
+          <StatusMessage kind="notice">Run saved.</StatusMessage>
+        ) : null}
+        {runError ? (
+          <StatusMessage kind="error">
+            {runError === "invalid_run"
+              ? "Check your run details and try again."
+              : "Unable to save this run. Try again."}
+          </StatusMessage>
+        ) : null}
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <section className="rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold">Effort zones</h2>
-                  <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                    Logged effort distribution.
-                  </p>
-                </div>
-                <Gauge className="h-4 w-4 text-primary" aria-hidden="true" />
+        <DashboardTabs
+          overview={
+            <>
+              <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <MetricCard
+                  icon={<Activity className="h-4 w-4" aria-hidden="true" />}
+                  title="Runs"
+                  value={String(analytics.summary.runCount)}
+                  description="Valid logged runs."
+                />
+                <MetricCard
+                  icon={<Route className="h-5 w-5" aria-hidden="true" />}
+                  title="Distance"
+                  value={formatDistance(
+                    analytics.summary.distanceMeters,
+                    profile.preferred_unit,
+                  )}
+                  description="Total logged volume."
+                />
+                <MetricCard
+                  icon={<Gauge className="h-5 w-5" aria-hidden="true" />}
+                  title="Average pace"
+                  value={formatOptionalPace(
+                    analytics.summary.averagePaceSecondsPerKm,
+                    profile.preferred_unit,
+                  )}
+                  description="Aggregate pace."
+                />
+                <MetricCard
+                  icon={<Trophy className="h-5 w-5" aria-hidden="true" />}
+                  title="Longest run"
+                  value={formatDistance(
+                    analytics.summary.longestRunMeters,
+                    profile.preferred_unit,
+                  )}
+                  description="Personal distance record."
+                />
+              </section>
+              <CurrentTrainingCard
+                latestWeek={latestWeek}
+                latestMonth={latestMonth}
+                currentRunDayStreak={analytics.streaks.currentRunDayStreak}
+                currentRunWeekStreak={analytics.streaks.currentRunWeekStreak}
+                activeGoals={activeGoals}
+                activeShoes={activeShoes.length}
+                preferredUnit={profile.preferred_unit}
+              />
+              <RunHistorySection
+                title="Recent runs"
+                description="Latest saved runs."
+                runs={overviewRuns}
+                preferredUnit={profile.preferred_unit}
+                compact
+              />
+            </>
+          }
+          training={
+            <section className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className="grid gap-4">
+                <CurrentTrainingCard
+                  latestWeek={latestWeek}
+                  latestMonth={latestMonth}
+                  currentRunDayStreak={analytics.streaks.currentRunDayStreak}
+                  currentRunWeekStreak={analytics.streaks.currentRunWeekStreak}
+                  activeGoals={activeGoals}
+                  activeShoes={activeShoes.length}
+                  preferredUnit={profile.preferred_unit}
+                />
+                <EffortZonesPanel
+                  effortZoneRows={effortZoneRows}
+                  preferredUnit={profile.preferred_unit}
+                />
               </div>
-              <dl className="grid gap-3">
-                {effortZoneRows.map(({ label, zone }) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between gap-4 rounded-lg border bg-background/70 px-3 py-2"
-                  >
-                    <dt className="text-sm font-medium">{label}</dt>
-                    <dd className="text-right text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">
-                        {zone.runCount}
-                      </span>{" "}
-                      /{" "}
-                      {formatDistance(
-                        zone.distanceMeters,
-                        profile.preferred_unit,
-                      )}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+              <RecoverySignalsPanel signals={analytics.recoverySignals} />
             </section>
-
-            <section className="rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold">Recovery signals</h2>
-                  <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                    Recent load and effort checks.
-                  </p>
-                </div>
-                <Flame className="h-4 w-4 text-primary" aria-hidden="true" />
-              </div>
-              {analytics.recoverySignals.length > 0 ? (
-                <ul className="grid gap-3">
-                  {analytics.recoverySignals.map((signal) => (
-                    <li
-                      key={`${signal.kind}-${signal.message}`}
-                      className="rounded-lg border bg-background/70 px-3 py-2"
-                    >
-                      <span
-                        className={`text-xs font-semibold uppercase ${getRecoverySignalClassName(signal)}`}
-                      >
-                        {signal.severity}
-                      </span>
-                      <p className="mt-1 text-sm leading-5">{signal.message}</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="rounded-lg border border-dashed bg-background/70 px-3 py-4 text-sm leading-6 text-muted-foreground">
-                  No recovery signals in the current training window.
-                </p>
-              )}
-            </section>
-          </div>
-        </section>
-
-        <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(25rem,0.42fr)_minmax(0,0.58fr)] xl:gap-5">
-          <section
-            id="add-run"
-            className="rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-5"
-          >
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold">Add a run</h2>
-                <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                  Save the workout details you need for the Phase 2 history and
-                  dashboard.
-                </p>
-              </div>
-              <div className="rounded-full bg-primary/10 p-2 text-primary">
-                <Plus className="h-5 w-5" aria-hidden="true" />
-              </div>
-            </div>
-
-            <div className="mb-4 grid gap-3">
-              {runNotice === "created" ? (
-                <StatusMessage kind="notice">Run saved.</StatusMessage>
-              ) : null}
-              {runError ? (
-                <StatusMessage kind="error">
-                  {runError === "invalid_run"
-                    ? "Check your run details and try again."
-                    : "Unable to save this run. Try again."}
-                </StatusMessage>
-              ) : null}
-            </div>
-
-            <RunForm
-              action={createRun}
-              submitLabel="Save run"
+          }
+          history={
+            <RunHistorySection
+              title="Run history"
+              description="Saved runs with pace, shoe, and effort details."
+              runs={historyRuns}
               preferredUnit={profile.preferred_unit}
-              shoes={shoes}
             />
-          </section>
-
-          <section className="flex min-h-[27rem] flex-col rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-semibold">Recent run history</h2>
-                <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                  Latest runs with pace, shoe, and effort details.
-                </p>
-              </div>
-              <Footprints className="h-4 w-4 text-primary" aria-hidden="true" />
-            </div>
-
-            {recentRuns.length > 0 ? (
-              <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-                <div className="hidden grid-cols-[1fr_0.8fr_0.8fr_0.7fr_1fr_0.6fr] gap-4 border-b pb-3 text-xs font-medium uppercase text-muted-foreground lg:grid">
-                  <span>Date</span>
-                  <span>Distance</span>
-                  <span>Duration</span>
-                  <span>Pace</span>
-                  <span>Shoe</span>
-                  <span>Effort</span>
-                </div>
-                <ul className="divide-y" aria-label="Recent runs">
-                  {recentRuns.map((run) => {
-                    const shoeName = getShoeName(run);
-                    const pace = formatPace(
-                      getAveragePaceSecondsPerKm(run),
-                      profile.preferred_unit,
-                    );
-
-                    return (
-                      <li key={run.id}>
-                        <Link
-                          href={`/runs/${run.id}`}
-                          className="grid gap-3 py-4 transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:grid-cols-[1fr_0.8fr_0.8fr_0.7fr_1fr_0.6fr] lg:gap-4"
-                        >
-                          <span className="font-medium">{run.run_date}</span>
-                          <span>
-                            {formatDistance(
-                              run.distance_meters,
-                              profile.preferred_unit,
-                            )}
-                          </span>
-                          <span>{formatDuration(run.duration_seconds)}</span>
-                          <span>{pace}</span>
-                          <span className="text-muted-foreground">
-                            {shoeName ?? "No shoe"}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {run.effort ? `${run.effort}/10` : "N/A"}
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ) : (
-              <EmptyState />
-            )}
-          </section>
-        </div>
+          }
+        />
       </div>
     </AppShell>
   );
@@ -335,7 +196,7 @@ function MetricCard({
   description: string;
 }) {
   return (
-    <article className="min-h-[7.5rem] rounded-xl border bg-card p-4 text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md lg:p-5">
+    <article className="min-h-[7rem] rounded-lg bg-card p-4 text-card-foreground shadow-sm ring-1 ring-border/70 transition hover:-translate-y-0.5 hover:ring-primary/25 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
         <div className="rounded-full bg-primary/10 p-2 text-primary">
@@ -352,30 +213,241 @@ function MetricCard({
   );
 }
 
-function AnalyticsCard({
-  icon,
-  title,
-  value,
-  detail,
+function CurrentTrainingCard({
+  latestWeek,
+  latestMonth,
+  currentRunDayStreak,
+  currentRunWeekStreak,
+  activeGoals,
+  activeShoes,
+  preferredUnit,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-  detail: string;
+  latestWeek: PeriodMileage | null;
+  latestMonth: PeriodMileage | null;
+  currentRunDayStreak: number;
+  currentRunWeekStreak: number;
+  activeGoals: number;
+  activeShoes: number;
+  preferredUnit: "metric" | "imperial";
+}) {
+  const items = [
+    {
+      label: "Latest week",
+      value: formatPeriodDistance(latestWeek, preferredUnit),
+      detail: formatPeriodDetail(latestWeek),
+    },
+    {
+      label: "Latest month",
+      value: formatPeriodDistance(latestMonth, preferredUnit),
+      detail: formatPeriodDetail(latestMonth),
+    },
+    {
+      label: "Run streak",
+      value: `${currentRunDayStreak} day${currentRunDayStreak === 1 ? "" : "s"}`,
+      detail: `${currentRunWeekStreak} active week${currentRunWeekStreak === 1 ? "" : "s"}`,
+    },
+    {
+      label: "Training context",
+      value: `${activeGoals} goal${activeGoals === 1 ? "" : "s"}`,
+      detail: `${activeShoes} active shoe${activeShoes === 1 ? "" : "s"}`,
+    },
+  ];
+
+  return (
+    <section className="rounded-lg bg-card p-4 text-card-foreground shadow-sm ring-1 ring-border/70">
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">Current training</h2>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            Volume, consistency, and account context.
+          </p>
+        </div>
+        <Clock3 className="h-4 w-4 text-primary" aria-hidden="true" />
+      </div>
+      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {items.map((item) => (
+          <div key={item.label} className="min-w-0">
+            <dt className="text-xs font-medium uppercase text-muted-foreground">
+              {item.label}
+            </dt>
+            <dd className="mt-1 text-xl font-semibold leading-none">
+              {item.value}
+            </dd>
+            <dd className="mt-1 text-sm leading-5 text-muted-foreground">
+              {item.detail}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+function EffortZonesPanel({
+  effortZoneRows,
+  preferredUnit,
+}: {
+  effortZoneRows: Array<{
+    label: string;
+    zone: {
+      runCount: number;
+      distanceMeters: number;
+    };
+  }>;
+  preferredUnit: "metric" | "imperial";
 }) {
   return (
-    <article className="min-h-[8rem] rounded-xl border bg-card p-4 text-card-foreground shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-        <div className="rounded-full bg-primary/10 p-2 text-primary">
-          {icon}
+    <section className="rounded-lg bg-card p-4 text-card-foreground shadow-sm ring-1 ring-border/70">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">Effort zones</h2>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            Logged effort distribution.
+          </p>
         </div>
+        <Gauge className="h-4 w-4 text-primary" aria-hidden="true" />
       </div>
-      <p className="mt-4 text-2xl font-semibold leading-none tracking-normal">
-        {value}
-      </p>
-      <p className="mt-1.5 text-sm leading-5 text-muted-foreground">{detail}</p>
-    </article>
+      <dl className="grid gap-2">
+        {effortZoneRows.map(({ label, zone }) => (
+          <div
+            key={label}
+            className="flex items-center justify-between gap-4 rounded-md bg-background/70 px-3 py-2"
+          >
+            <dt className="text-sm font-medium">{label}</dt>
+            <dd className="text-right text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">
+                {zone.runCount}
+              </span>{" "}
+              / {formatDistance(zone.distanceMeters, preferredUnit)}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+function RecoverySignalsPanel({ signals }: { signals: RecoverySignal[] }) {
+  return (
+    <section className="rounded-lg bg-card p-4 text-card-foreground shadow-sm ring-1 ring-border/70">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">Recovery signals</h2>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            Recent load and effort checks.
+          </p>
+        </div>
+        <Flame className="h-4 w-4 text-primary" aria-hidden="true" />
+      </div>
+      {signals.length > 0 ? (
+        <ul className="grid gap-2">
+          {signals.map((signal) => (
+            <li
+              key={`${signal.kind}-${signal.message}`}
+              className="rounded-md bg-background/70 px-3 py-2"
+            >
+              <span
+                className={`text-xs font-semibold uppercase ${getRecoverySignalClassName(signal)}`}
+              >
+                {signal.severity}
+              </span>
+              <p className="mt-1 text-sm leading-5">{signal.message}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed bg-background/70 px-3 py-4 text-sm leading-6 text-muted-foreground">
+          No recovery signals in the current training window.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function RunHistorySection({
+  title,
+  description,
+  runs,
+  preferredUnit,
+  compact = false,
+}: {
+  title: string;
+  description: string;
+  runs: Array<{
+    id: string;
+    run_date: string;
+    distance_meters: number;
+    duration_seconds: number;
+    effort: number | null;
+    shoes?: Parameters<typeof getShoeName>[0]["shoes"];
+  }>;
+  preferredUnit: "metric" | "imperial";
+  compact?: boolean;
+}) {
+  return (
+    <section className="flex min-h-[18rem] flex-col rounded-lg bg-card p-4 text-card-foreground shadow-sm ring-1 ring-border/70 sm:p-5">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            {description}
+          </p>
+        </div>
+        <Footprints className="h-4 w-4 text-primary" aria-hidden="true" />
+      </div>
+
+      {runs.length > 0 ? (
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="hidden grid-cols-[1fr_0.8fr_0.8fr_0.7fr_1.1fr_0.6fr] gap-4 border-b pb-3 text-xs font-medium uppercase text-muted-foreground lg:grid">
+            <span>Date</span>
+            <span>Distance</span>
+            <span>Duration</span>
+            <span>Pace</span>
+            <span className={compact ? "hidden lg:block" : ""}>Shoe</span>
+            <span>Effort</span>
+          </div>
+          <ul className="divide-y" aria-label={title}>
+            {runs.map((run) => {
+              const shoeName = getShoeName(run);
+              const pace = formatPace(
+                getAveragePaceSecondsPerKm(run),
+                preferredUnit,
+              );
+
+              return (
+                <li key={run.id}>
+                  <Link
+                    href={`/runs/${run.id}`}
+                    className="grid gap-2 py-3 text-sm transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:grid-cols-2 lg:grid-cols-[1fr_0.8fr_0.8fr_0.7fr_1.1fr_0.6fr] lg:gap-4"
+                  >
+                    <span className="font-medium">{run.run_date}</span>
+                    <span>
+                      {formatDistance(run.distance_meters, preferredUnit)}
+                    </span>
+                    <span>{formatDuration(run.duration_seconds)}</span>
+                    <span>{pace}</span>
+                    <span
+                      className={
+                        compact
+                          ? "hidden text-muted-foreground lg:block"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {shoeName ?? "No shoe"}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {run.effort ? `${run.effort}/10` : "N/A"}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : (
+        <EmptyState />
+      )}
+    </section>
   );
 }
 
