@@ -47,19 +47,37 @@ Out of scope:
 Pace:
 
 - `duration_seconds / distance_meters`
+- Store internally as seconds per kilometer.
 - Display as minutes per mile or minutes per kilometer based on user preference.
 
 Weekly mileage:
 
-- Sum of run distance in a calendar or configured week.
+- Sum of run distance in ISO weeks that start on Monday in UTC.
+
+Monthly mileage:
+
+- Sum of run distance by calendar month using `YYYY-MM`.
+
+Personal records:
+
+- Longest run uses maximum distance.
+- Fastest pace uses lowest aggregate seconds per kilometer.
 
 Streak:
 
 - Count of consecutive days or weeks with qualifying activity.
 
+Effort zones:
+
+- Easy: effort 1-3.
+- Moderate: effort 4-7.
+- Hard: effort 8-10.
+- Unknown: missing or out-of-range effort.
+
 Comparable runs:
 
-- Runs near the target distance or matching effort/type when available.
+- Runs within a deterministic distance tolerance of the target distance.
+- Sort by absolute distance delta first, then newer run date.
 
 Recovery signals:
 
@@ -67,6 +85,10 @@ Recovery signals:
 - Effort clustering
 - Elevated heart rate when enough data exists
 - Missing easy/recovery days
+
+Invalid data:
+
+- Runs with invalid date, non-positive distance, or non-positive duration are excluded from metrics and counted separately.
 
 ## Testing Plan
 

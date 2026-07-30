@@ -1,6 +1,6 @@
 # Week 3 Tasks: Analytics and AI Foundation
 
-Status: Draft
+Status: In progress
 
 ## Goal
 
@@ -8,23 +8,25 @@ Implement deterministic analytics, then expose those analytics to initial AI age
 
 ## Tasks
 
-- Create analytics module structure.
-- Implement pace calculations.
-- Implement weekly and monthly mileage.
-- Implement longest run and average pace.
-- Implement personal record detection.
-- Implement streak detection.
-- Implement effort zone grouping.
-- Implement comparable run selection.
-- Add analytics unit tests.
-- Add Mastra directory structure.
-- Implement `getRunById`.
-- Implement `getRecentRuns`.
-- Implement `getWeeklyStats`.
-- Implement `getGoal`.
-- Implement `saveInsight`.
-- Build run summary agent.
-- Build historical analyst agent.
+- [x] Create analytics module structure.
+- [x] Implement pace calculations.
+- [x] Implement weekly and monthly mileage.
+- [x] Implement longest run and average pace.
+- [x] Implement personal record detection.
+- [x] Implement streak detection.
+- [x] Implement effort zone grouping.
+- [x] Implement comparable run selection.
+- [x] Add analytics unit tests.
+- [ ] Surface analytics outputs in the dashboard.
+- [ ] Decide whether dashboard analytics should query more than recent runs.
+- [ ] Add Mastra directory structure.
+- [ ] Implement `getRunById`.
+- [ ] Implement `getRecentRuns`.
+- [ ] Implement `getWeeklyStats`.
+- [ ] Implement `getGoal`.
+- [ ] Implement `saveInsight`.
+- [ ] Build run summary agent.
+- [ ] Build historical analyst agent.
 
 ## Validation
 

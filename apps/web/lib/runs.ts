@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { buildRunAnalytics, type AnalyticsRun } from "@/lib/analytics";
+
 export type DashboardRun = {
   id: string;
   shoe_id?: string | null;
@@ -102,18 +104,13 @@ export async function getRunById(
 }
 
 export function getRunDashboardStats(runs: DashboardRun[]): RunDashboardStats {
-  return runs.reduce(
-    (stats, run) => ({
-      runCount: stats.runCount + 1,
-      distanceMeters: stats.distanceMeters + run.distance_meters,
-      durationSeconds: stats.durationSeconds + run.duration_seconds,
-    }),
-    {
-      runCount: 0,
-      distanceMeters: 0,
-      durationSeconds: 0,
-    },
-  );
+  const analytics = buildRunAnalytics(runs.map(toAnalyticsRun));
+
+  return {
+    runCount: analytics.summary.runCount,
+    distanceMeters: analytics.summary.distanceMeters,
+    durationSeconds: analytics.summary.durationSeconds,
+  };
 }
 
 export function formatDistance(meters: number, unit: "metric" | "imperial") {
@@ -166,4 +163,16 @@ export function getShoeName(run: Pick<DashboardRun, "shoes">) {
   }
 
   return run.shoes?.name ?? null;
+}
+
+function toAnalyticsRun(run: DashboardRun): AnalyticsRun {
+  return {
+    id: run.id,
+    runDate: run.run_date,
+    distanceMeters: run.distance_meters,
+    durationSeconds: run.duration_seconds,
+    effort: run.effort,
+    avgHeartRate: run.avg_heart_rate,
+    maxHeartRate: run.max_heart_rate,
+  };
 }

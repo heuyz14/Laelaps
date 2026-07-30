@@ -1,6 +1,6 @@
 # Phase 3: Analytics
 
-Status: Draft  
+Status: In progress  
 Target: Week 3, first half  
 Depends on: Phase 2
 
