@@ -4,10 +4,6 @@ Laelaps is an AI running intelligence platform for athletes who want precise, ev
 
 The project is designed around a clear boundary: the application calculates metrics deterministically, and the AI explains those metrics. AI agents should not invent or calculate core statistics themselves.
 
-## Brand Note
-
-Laelaps is named after the mythological hound that always caught what it hunted. The product uses that idea in a grounded way: fast signal detection, precise analysis, and persistent pursuit of training goals. The tone should stay modern, technical, and athlete-focused rather than fantasy-themed.
-
 ## Vision
 
 Laelaps should become an AI running coach capable of:
