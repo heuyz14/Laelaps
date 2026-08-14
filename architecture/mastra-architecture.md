@@ -1,20 +1,22 @@
 # Mastra Architecture
 
-Status: Draft
+Status: Implemented for local MVP
 
 ## Executive Summary
 
-Mastra powers the AI layer for explanation, analysis, and coaching. Agents interact with the application through typed tools that fetch authenticated data and precomputed analytics.
+Mastra is planned to power the AI layer for explanation, analysis, and coaching. The initial provider-independent tool contracts are being built first so agents can only fetch authenticated data and precomputed analytics.
+
+The application uses provider-independent domain agents behind an
+OpenAI-compatible server adapter, with Mastra 1.58 providing the typed runtime
+registry in `apps/web/mastra`. This keeps provider configuration server-only and
+allows the application routes to retain stable, testable boundaries.
 
 ## Directory Shape
 
 ```text
-src/mastra/
-  agents/
-  tools/
-  prompts/
-  workflows/
-  schemas/
+apps/web/mastra/
+  index.ts
+  tools.ts
 ```
 
 ## Agents
@@ -61,6 +63,7 @@ Recovery agent:
 - `getComparableRuns`
 - `getRecoverySignals`
 - `saveInsight`
+- `getSavedInsights`
 
 ## Prompt Strategy
 

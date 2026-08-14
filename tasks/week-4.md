@@ -1,6 +1,6 @@
 # Week 4 Tasks: Coaching and Production
 
-Status: Draft
+Status: In progress
 
 ## Goal
 
@@ -8,13 +8,13 @@ Add coaching workflows, recovery analysis, observability, deployment, and portfo
 
 ## Tasks
 
-- Implement training coach workflow.
-- Implement recovery signal calculation.
-- Implement recovery agent.
-- Store structured AI insights.
-- Track AI usage records.
-- Add AI failure handling.
-- Add rate-limit strategy.
+- [x] Implement training coach workflow.
+- [x] Implement recovery signal calculation.
+- [x] Implement recovery agent.
+- [x] Store structured AI insights.
+- [x] Track AI usage records.
+- [x] Add AI failure handling.
+- [x] Record usage data needed for rate-limit strategy.
 - Select the initial GCP hosting target.
 - Configure production Supabase.
 - Configure production OAuth redirects.

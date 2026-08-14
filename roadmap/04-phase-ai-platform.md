@@ -1,6 +1,6 @@
 # Phase 4: AI Platform
 
-Status: Draft  
+Status: Complete for local MVP
 Target: Week 3, second half through Week 4  
 Depends on: Phase 3
 
@@ -46,6 +46,12 @@ AI code can begin inside `apps/web` or a server-oriented source area if that kee
 - Agent outputs should cite the run, time window, or metric source they used.
 - Coaching advice should remain bounded, non-medical, and uncertainty-aware.
 - AI failures must not block core logging, dashboard, or history flows.
+
+Implemented: authenticated tools, saved insight retrieval, usage telemetry,
+run summary, historical analysis, training coach, recovery analysis, dashboard
+controls, Mastra agents/tools/workflow registration, failure handling, and
+acceptance documentation. Production hosting, OAuth redirect configuration, and
+rate limiting remain release operations rather than local Phase 4 code.
 
 ## Acceptance Criteria
 

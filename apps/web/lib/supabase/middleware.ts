@@ -36,9 +36,15 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch {
+    // Public routes remain available when Supabase is temporarily unreachable.
+    // Protected routes below still redirect because no authenticated user exists.
+  }
 
   const pathname = request.nextUrl.pathname;
 

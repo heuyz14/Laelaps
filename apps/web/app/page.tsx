@@ -13,9 +13,14 @@ export default async function HomePage({
   }>;
 }) {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch {
+    // Keep the public landing page usable while auth infrastructure is unavailable.
+  }
 
   if (user) {
     redirect("/dashboard");

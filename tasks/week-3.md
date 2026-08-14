@@ -20,13 +20,15 @@ Implement deterministic analytics, then expose those analytics to initial AI age
 - [x] Surface analytics outputs in the dashboard.
 - [x] Decide whether dashboard analytics should query more than recent runs.
 - [ ] Add Mastra directory structure.
-- [ ] Implement `getRunById`.
-- [ ] Implement `getRecentRuns`.
-- [ ] Implement `getWeeklyStats`.
-- [ ] Implement `getGoal`.
-- [ ] Implement `saveInsight`.
-- [ ] Build run summary agent.
-- [ ] Build historical analyst agent.
+- [x] Implement authenticated `getRunById`.
+- [x] Implement authenticated `getRecentRuns`.
+- [x] Implement `getWeeklyStats` from deterministic analytics.
+- [x] Implement authenticated `getGoal`.
+- [x] Implement authenticated `getComparableRuns` and `getRecoverySignals`.
+- [x] Implement authenticated `saveInsight`.
+- [x] Build provider-independent run summary agent and protected API route.
+- [x] Add run-detail summary UI and AI usage telemetry.
+- [x] Build historical analyst agent and protected API route.
 
 ## Validation
 

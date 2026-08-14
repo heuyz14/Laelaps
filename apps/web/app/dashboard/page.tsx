@@ -12,6 +12,7 @@ import Link from "next/link";
 import { createRun } from "@/app/dashboard/actions";
 import { AppShell, StatusMessage } from "@/components/app/app-shell";
 import { DashboardTabs } from "@/components/app/dashboard-tabs";
+import { AiInsightsPanel } from "@/components/app/ai-insights-panel";
 import { AddRunDialog } from "@/components/runs/add-run-dialog";
 import type { PeriodMileage, RecoverySignal } from "@/lib/analytics";
 import { getAuthenticatedContext } from "@/lib/auth/session";
@@ -60,7 +61,7 @@ export default async function DashboardPage({
     { label: "Easy", zone: analytics.effortZones.easy },
     { label: "Moderate", zone: analytics.effortZones.moderate },
     { label: "Hard", zone: analytics.effortZones.hard },
-    { label: "Unknown", zone: analytics.effortZones.unknown },
+    { label: "Not set", zone: analytics.effortZones.unknown },
   ];
 
   return (
@@ -166,6 +167,7 @@ export default async function DashboardPage({
                   effortZoneRows={effortZoneRows}
                   preferredUnit={profile.preferred_unit}
                 />
+                <AiInsightsPanel />
               </div>
               <RecoverySignalsPanel signals={analytics.recoverySignals} />
             </section>

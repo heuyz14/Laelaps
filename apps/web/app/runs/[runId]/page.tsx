@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { deleteRun } from "@/app/dashboard/actions";
 import { AppShell, StatusMessage } from "@/components/app/app-shell";
+import { RunSummaryPanel } from "@/components/runs/run-summary-panel";
 import { Button } from "@/components/ui/button";
 import { getAuthenticatedContext } from "@/lib/auth/session";
 import { ensureUserProfile } from "@/lib/profiles";
@@ -107,6 +108,8 @@ export default async function RunDetailPage({
             value={run.effort ? `${run.effort}/10` : "Not set"}
           />
         </section>
+
+        <RunSummaryPanel runId={run.id} />
 
         <section className="grid gap-4 rounded-lg border bg-card p-6 text-card-foreground">
           <h3 className="text-lg font-semibold">Training details</h3>
