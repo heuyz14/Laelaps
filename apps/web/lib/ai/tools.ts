@@ -59,6 +59,33 @@ export async function getRecentRuns(
   return (data ?? []) as AiRun[];
 }
 
+export async function getTrainingSnapshot(context: AiToolContext) {
+  const userId = await getAuthenticatedUserId(context);
+  const { data, error } = await context.supabase
+    .from("runs")
+    .select(runSelect)
+    .eq("user_id", userId)
+    .order("run_date", { ascending: false })
+    .limit(1000);
+
+  if (error) {
+    throw new Error("Unable to load AI training snapshot.");
+  }
+
+  const runs = (data ?? []) as AiRun[];
+  const analytics = buildRunAnalytics(runs.map(toAnalyticsRun));
+
+  return {
+    recentRuns: runs.slice(0, 20),
+    summary: analytics.summary,
+    weeklyMileage: analytics.weeklyMileage.slice(0, 12),
+    monthlyMileage: analytics.monthlyMileage.slice(0, 6),
+    streaks: analytics.streaks,
+    effortZones: analytics.effortZones,
+    recoverySignals: analytics.recoverySignals,
+  };
+}
+
 export async function getWeeklyStats(
   context: AiToolContext,
 ): Promise<AiWeeklyStats> {

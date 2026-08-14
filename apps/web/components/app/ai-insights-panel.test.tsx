@@ -3,28 +3,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AiInsightsPanel } from "@/components/app/ai-insights-panel";
 
-const metrics = {
-  totalDistance: "42.8 km",
-  runCount: 7,
-  averagePace: "5:18 /km",
-  longestRun: "12.4 km",
-};
-
 describe("AiInsightsPanel", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("routes next-run questions to the training coach chat endpoint", async () => {
+  it("routes next-run questions to the training chat agent", async () => {
     const fetchMock = vi.fn(
       async () =>
         new Response(
           JSON.stringify({
             output: {
-              weeklySummary: "You have logged a steady week.",
-              recommendation: "Keep the run aerobic.",
-              nextRunSuggestion: "Run 4 easy miles today.",
-              riskFlags: [],
+              answer: "Run 4 easy miles today.",
+              evidence: ["Recent load is steady."],
+              followUp: "Keep the effort conversational.",
               confidence: "medium",
             },
           }),
@@ -33,7 +25,7 @@ describe("AiInsightsPanel", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<AiInsightsPanel metrics={metrics} />);
+    render(<AiInsightsPanel />);
     fireEvent.change(screen.getByLabelText("Training question"), {
       target: { value: "How far should I run today?" },
     });
@@ -41,52 +33,78 @@ describe("AiInsightsPanel", () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
-        "/api/ai/training-coach",
-        expect.objectContaining({ method: "POST" }),
+        "/api/ai/training-chat",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({
+            question: "How far should I run today?",
+            mode: "coach",
+          }),
+        }),
       );
     });
     expect(await screen.findByText("Run 4 easy miles today.")).toBeVisible();
-    expect(screen.getByText("Keep the run aerobic.")).toBeVisible();
+    expect(screen.getByText("Recent load is steady.")).toBeVisible();
   });
 
-  it("turns history-analysis failures into a useful chat response", async () => {
+  it("uses the chat agent for year-to-date distance questions", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            output: {
+              answer: "You have run 42.8 km this year.",
+              evidence: ["The authenticated training snapshot totals 42.8 km."],
+              confidence: "high",
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<AiInsightsPanel />);
+    fireEvent.change(screen.getByLabelText("Training question"), {
+      target: { value: "How far have i ran this year" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/ai/training-chat",
+        expect.objectContaining({
+          body: JSON.stringify({
+            question: "How far have i ran this year",
+            mode: "coach",
+          }),
+        }),
+      );
+    });
+    expect(
+      await screen.findByText("You have run 42.8 km this year."),
+    ).toBeVisible();
+  });
+
+  it("turns chat-agent failures into a useful chat response", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(
         async () =>
           new Response(
-            JSON.stringify({ error: "Unable to analyze training history." }),
+            JSON.stringify({ error: "Unable to answer training chat." }),
             { status: 502, headers: { "Content-Type": "application/json" } },
           ),
       ),
     );
 
-    render(<AiInsightsPanel metrics={metrics} />);
-    fireEvent.click(screen.getByRole("button", { name: "History" }));
+    render(<AiInsightsPanel />);
     fireEvent.change(screen.getByLabelText("Training question"), {
-      target: { value: "How far should I run today?" },
+      target: { value: "How far have i ran this year" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
     expect(
-      await screen.findByText(/Try the Next run mode/i),
+      await screen.findByText(/specific time window/i),
     ).toBeInTheDocument();
-  });
-
-  it("answers total-distance questions from dashboard metrics without calling AI", async () => {
-    const fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
-
-    render(<AiInsightsPanel metrics={metrics} />);
-    fireEvent.change(screen.getByLabelText("Training question"), {
-      target: { value: "How far was my runs so far total" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Send" }));
-
-    expect(
-      await screen.findByText("Your logged runs total 42.8 km."),
-    ).toBeVisible();
-    expect(screen.getByText("7 runs logged")).toBeVisible();
-    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

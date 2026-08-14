@@ -6,6 +6,7 @@ import {
   getGoal,
   getRecentRuns,
   getRunById,
+  getTrainingSnapshot,
   getWeeklyStats,
   saveInsight,
 } from "@/lib/ai/tools";
@@ -122,6 +123,17 @@ describe("scoped AI tools", () => {
       averagePaceSecondsPerKm: 300,
     });
     expect(result.weeklyMileage).toHaveLength(1);
+  });
+
+  it("builds a broad training snapshot scoped to the authenticated user", async () => {
+    const query = queryMock([run()]);
+    const result = await getTrainingSnapshot({
+      supabase: clientWithQuery(query),
+    });
+
+    expect(result.summary.distanceMeters).toBe(5000);
+    expect(query.calls).toContain(`eq:user_id:${userId}`);
+    expect(query.calls).toContain("limit:1000");
   });
 
   it("selects comparable runs without returning the target run", async () => {

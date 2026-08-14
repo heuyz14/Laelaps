@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 type ChatMode = "coach" | "recovery" | "history";
 
 type Analysis = {
+  answer?: string;
   summary?: string;
   directAnswer?: string;
   weeklySummary?: string;
@@ -16,6 +17,7 @@ type Analysis = {
   evidence?: string[];
   likelyContributors?: string[];
   caveats?: string[];
+  followUp?: string;
   confidence?: string;
 };
 
@@ -26,13 +28,6 @@ type ChatMessage = {
   body: string;
   items?: Array<{ label: string; values: string[] }>;
   tone?: "normal" | "error";
-};
-
-type TrainingMetrics = {
-  totalDistance: string;
-  runCount: number;
-  averagePace: string;
-  longestRun: string;
 };
 
 const modes: Array<{
@@ -57,7 +52,7 @@ const modes: Array<{
   },
 ];
 
-export function AiInsightsPanel({ metrics }: { metrics: TrainingMetrics }) {
+export function AiInsightsPanel() {
   const [question, setQuestion] = useState("");
   const [mode, setMode] = useState<ChatMode>("coach");
   const [loading, setLoading] = useState(false);
@@ -79,21 +74,6 @@ export function AiInsightsPanel({ metrics }: { metrics: TrainingMetrics }) {
     if (loading || (mode !== "recovery" && prompt.length < 3)) return;
 
     const userMessage = prompt || "Check my current recovery signals.";
-    const metricAnswer = getMetricAnswer(prompt, metrics);
-    if (metricAnswer) {
-      setQuestion("");
-      setMessages((current) => [
-        ...current,
-        {
-          id: crypto.randomUUID(),
-          role: "user",
-          body: userMessage,
-        },
-        metricAnswer,
-      ]);
-      return;
-    }
-
     setLoading(true);
     setQuestion("");
     setMessages((current) => [
@@ -106,10 +86,13 @@ export function AiInsightsPanel({ metrics }: { metrics: TrainingMetrics }) {
     ]);
 
     try {
-      const response = await fetch(endpointForMode(mode), {
+      const response = await fetch("/api/ai/training-chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(mode === "history" ? { question: prompt } : {}),
+        body: JSON.stringify({
+          question: mode === "recovery" && !prompt ? userMessage : prompt,
+          mode,
+        }),
       });
       const body = (await response.json()) as {
         output?: Analysis;
@@ -119,7 +102,7 @@ export function AiInsightsPanel({ metrics }: { metrics: TrainingMetrics }) {
 
       setMessages((current) => [
         ...current,
-        formatAssistantMessage(mode, body.output ?? {}),
+        formatAssistantMessage(body.output ?? {}),
       ]);
     } catch (cause) {
       setMessages((current) => [
@@ -217,7 +200,7 @@ export function AiInsightsPanel({ metrics }: { metrics: TrainingMetrics }) {
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
               {mode === "coach"
-                ? "Best for today, distance, and next-run questions."
+                ? "Ask anything about totals, this year, or your next run."
                 : mode === "recovery"
                   ? "You can send this blank to check current signals."
                   : "Best for trends and what changed over time."}
@@ -282,71 +265,26 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function endpointForMode(mode: ChatMode) {
-  if (mode === "coach") return "/api/ai/training-coach";
-  if (mode === "recovery") return "/api/ai/recovery-analysis";
-  return "/api/ai/historical-analysis";
-}
-
-function formatAssistantMessage(
-  mode: ChatMode,
-  analysis: Analysis,
-): ChatMessage {
-  if (mode === "coach") {
-    return {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      title: "Next run suggestion",
-      body:
-        analysis.nextRunSuggestion ??
-        analysis.recommendation ??
-        "I could not find a specific next-run suggestion in the response.",
-      items: [
-        {
-          label: "Context",
-          values: [analysis.weeklySummary, analysis.recommendation].filter(
-            Boolean,
-          ) as string[],
-        },
-        { label: "Signals", values: analysis.riskFlags ?? [] },
-      ],
-    };
-  }
-
-  if (mode === "recovery") {
-    return {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      title: "Recovery review",
-      body:
-        analysis.summary ??
-        analysis.recommendation ??
-        "I could not find a recovery summary in the response.",
-      items: [
-        { label: "Signals", values: analysis.riskFlags ?? [] },
-        {
-          label: "Next action",
-          values: [analysis.recommendation].filter(Boolean) as string[],
-        },
-      ],
-    };
-  }
-
+function formatAssistantMessage(analysis: Analysis): ChatMessage {
   return {
     id: crypto.randomUUID(),
     role: "assistant",
-    title: "History answer",
+    title: "Training answer",
     body:
+      analysis.answer ??
       analysis.directAnswer ??
+      analysis.nextRunSuggestion ??
       analysis.summary ??
-      "I could not find a direct history answer in the response.",
+      analysis.recommendation ??
+      "I could not find a direct answer in the response.",
     items: [
       { label: "Evidence", values: analysis.evidence ?? [] },
-      { label: "Contributors", values: analysis.likelyContributors ?? [] },
-      { label: "Caveats", values: analysis.caveats ?? [] },
+      { label: "Signals", values: analysis.riskFlags ?? [] },
       {
-        label: "Next action",
-        values: [analysis.suggestedNextAction].filter(Boolean) as string[],
+        label: "Follow up",
+        values: [analysis.followUp ?? analysis.suggestedNextAction].filter(
+          Boolean,
+        ) as string[],
       },
     ],
   };
@@ -357,68 +295,11 @@ function getFriendlyError(message: string) {
     return "AI is not configured for this environment. Add the OpenRouter key and use openrouter/free or a :free model.";
   }
 
-  if (message.includes("training history")) {
-    return "The history analyst could not produce a valid grounded answer. Try the Next run mode for distance or today's workout questions.";
-  }
-
-  if (message.includes("training guidance")) {
-    return "The training coach could not produce a valid next-run suggestion. Try again, or switch to Recovery for a simpler signal check.";
+  if (message.includes("training chat")) {
+    return "The chat agent could not produce a valid grounded answer. Try rephrasing the question with a specific time window, such as this year, this month, or all time.";
   }
 
   return message;
-}
-
-function getMetricAnswer(
-  prompt: string,
-  metrics: TrainingMetrics,
-): ChatMessage | null {
-  const normalized = prompt.toLowerCase();
-  const asksTotal =
-    normalized.includes("total") ||
-    normalized.includes("so far") ||
-    normalized.includes("overall") ||
-    normalized.includes("all my") ||
-    normalized.includes("logged");
-  const asksDistance =
-    normalized.includes("distance") ||
-    normalized.includes("far") ||
-    normalized.includes("miles") ||
-    normalized.includes("kilometers") ||
-    normalized.includes("km") ||
-    normalized.includes("mi");
-
-  if (asksTotal && asksDistance) {
-    return {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      title: "Total distance",
-      body: `Your logged runs total ${metrics.totalDistance}.`,
-      items: [
-        {
-          label: "Dashboard metrics",
-          values: [
-            `${metrics.runCount} run${metrics.runCount === 1 ? "" : "s"} logged`,
-            `Average pace: ${metrics.averagePace}`,
-            `Longest run: ${metrics.longestRun}`,
-          ],
-        },
-      ],
-    };
-  }
-
-  if (
-    normalized.includes("how many") &&
-    (normalized.includes("runs") || normalized.includes("run"))
-  ) {
-    return {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      title: "Run count",
-      body: `You have ${metrics.runCount} logged run${metrics.runCount === 1 ? "" : "s"}.`,
-    };
-  }
-
-  return null;
 }
 
 function modeButton(active: boolean) {

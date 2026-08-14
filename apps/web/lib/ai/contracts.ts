@@ -6,6 +6,11 @@ export const runSummaryRequestSchema = z.object({
   runId: aiRunIdSchema,
 });
 
+export const trainingChatRequestSchema = z.object({
+  question: z.string().trim().min(3).max(500),
+  mode: z.enum(["coach", "recovery", "history"]).default("coach"),
+});
+
 export const saveInsightInputSchema = z.object({
   insightType: z.string().trim().min(1).max(80),
   runId: aiRunIdSchema.nullable().optional(),
