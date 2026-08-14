@@ -7,9 +7,10 @@ Status: Implemented for local MVP
 Mastra is planned to power the AI layer for explanation, analysis, and coaching. The initial provider-independent tool contracts are being built first so agents can only fetch authenticated data and precomputed analytics.
 
 The application uses provider-independent domain agents behind an
-OpenAI-compatible server adapter, with Mastra 1.58 providing the typed runtime
-registry in `apps/web/mastra`. This keeps provider configuration server-only and
-allows the application routes to retain stable, testable boundaries.
+OpenRouter-backed, OpenAI-compatible server adapter, with Mastra 1.58 providing
+the typed runtime registry in `apps/web/mastra`. Provider configuration stays
+server-only, and the app only accepts `openrouter/free` or explicit `:free`
+OpenRouter model variants for local MVP cost control.
 
 ## Directory Shape
 

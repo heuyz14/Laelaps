@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-const defaultEndpoint = "https://api.openai.com/v1/chat/completions";
-const defaultModel = "gpt-4o-mini";
+const openRouterEndpoint = "https://openrouter.ai/api/v1/chat/completions";
+const openRouterFreeModel = "openrouter/free";
 
 const aiProviderConfigSchema = z.object({
   apiKey: z.string().min(1),
@@ -14,13 +14,25 @@ export type AiProviderConfig = z.infer<typeof aiProviderConfigSchema>;
 export function getAiProviderConfig(
   env: Record<string, string | undefined> = process.env,
 ): AiProviderConfig | null {
-  const endpoint = env.AI_API_ENDPOINT?.trim() || defaultEndpoint;
-  const model = env.AI_MODEL?.trim() || defaultModel;
+  const openRouterApiKey = env.OPENROUTER_API_KEY?.trim();
+  if (!openRouterApiKey) {
+    return null;
+  }
+
+  const model = env.OPENROUTER_MODEL?.trim() || openRouterFreeModel;
+  if (!isFreeOpenRouterModel(model)) {
+    return null;
+  }
+
   const result = aiProviderConfigSchema.safeParse({
-    apiKey: env.AI_API_KEY,
-    endpoint,
+    apiKey: openRouterApiKey,
+    endpoint: openRouterEndpoint,
     model,
   });
 
   return result.success ? result.data : null;
+}
+
+function isFreeOpenRouterModel(model: string) {
+  return model === openRouterFreeModel || model.endsWith(":free");
 }
