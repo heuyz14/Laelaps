@@ -8,7 +8,6 @@ export const runSummaryRequestSchema = z.object({
 
 export const trainingChatRequestSchema = z.object({
   question: z.string().trim().min(3).max(500),
-  mode: z.enum(["coach", "recovery", "history"]).default("coach"),
 });
 
 export const saveInsightInputSchema = z.object({

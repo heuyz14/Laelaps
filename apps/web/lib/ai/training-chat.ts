@@ -6,9 +6,9 @@ import { getGoal, getTrainingSnapshot, saveInsight } from "@/lib/ai/tools";
 
 export const trainingChatOutputSchema = z.object({
   answer: z.string().trim().min(1).max(1400),
-  evidence: z.array(z.string().trim().min(1).max(400)).max(6),
+  evidence: z.array(z.string().trim().min(1).max(400)).max(6).default([]),
   followUp: z.string().trim().min(1).max(500).optional(),
-  confidence: z.enum(["low", "medium", "high"]),
+  confidence: z.enum(["low", "medium", "high"]).default("low"),
 });
 
 export type TrainingChatOutput = z.infer<typeof trainingChatOutputSchema>;
@@ -26,10 +26,11 @@ const defaultDependencies: TrainingChatDependencies = {
 };
 
 const systemPrompt = [
-  "You are the Laelaps training chat agent.",
-  "Answer the user's question using only the supplied authenticated run data and deterministic metrics.",
-  "If the question asks for totals, counts, distance, pace, streaks, or recovery signals, answer directly from the supplied metrics.",
-  "If the question asks what to run today, give conservative, non-medical guidance grounded in recent load and recovery signals.",
+  "You are the autonomous Laelaps training chat agent.",
+  "Answer the user's running and training questions using only the supplied authenticated run data, goals, recovery signals, and deterministic metrics.",
+  "Decide from the user's question whether they need history, totals, year-to-date distance, trends, recovery guidance, or a next-run suggestion.",
+  "When the user asks about this year, use snapshot.yearToDate as the source of truth.",
+  "If the available data is incomplete, say what is missing and answer from the evidence you do have.",
   "Do not invent runs, goals, distances, paces, or health claims.",
   "Return only JSON with answer, evidence, optional followUp, and confidence.",
 ].join(" ");
@@ -38,7 +39,6 @@ export async function answerTrainingChat(
   context: AiToolContext,
   input: {
     question: string;
-    mode: "coach" | "recovery" | "history";
   },
   provider: AiProvider,
   dependencies: TrainingChatDependencies = defaultDependencies,
@@ -49,7 +49,6 @@ export async function answerTrainingChat(
   ]);
   const groundedContext = {
     question: input.question,
-    mode: input.mode,
     snapshot,
     activeGoal,
   };
@@ -70,9 +69,10 @@ export async function answerTrainingChat(
     insightType: "training_chat",
     inputSummary: {
       question: input.question,
-      mode: input.mode,
       runCount: snapshot.summary.runCount,
       distanceMeters: snapshot.summary.distanceMeters,
+      year: snapshot.yearToDate.year,
+      yearToDateDistanceMeters: snapshot.yearToDate.summary.distanceMeters,
       activeGoalId: activeGoal?.id ?? null,
       recoverySignalKinds: snapshot.recoverySignals.map(
         (signal) => signal.kind,

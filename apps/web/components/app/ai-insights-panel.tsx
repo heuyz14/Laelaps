@@ -1,9 +1,7 @@
 "use client";
 
 import { Brain, Loader2, Send, ShieldCheck } from "lucide-react";
-import { useMemo, useState } from "react";
-
-type ChatMode = "coach" | "recovery" | "history";
+import { useState } from "react";
 
 type Analysis = {
   answer?: string;
@@ -30,50 +28,22 @@ type ChatMessage = {
   tone?: "normal" | "error";
 };
 
-const modes: Array<{
-  key: ChatMode;
-  label: string;
-  placeholder: string;
-}> = [
-  {
-    key: "coach",
-    label: "Next run",
-    placeholder: "How far should I run today?",
-  },
-  {
-    key: "recovery",
-    label: "Recovery",
-    placeholder: "Should I keep today's run easy?",
-  },
-  {
-    key: "history",
-    label: "History",
-    placeholder: "What has changed in my recent training?",
-  },
-];
-
 export function AiInsightsPanel() {
   const [question, setQuestion] = useState("");
-  const [mode, setMode] = useState<ChatMode>("coach");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "intro",
       role: "assistant",
       title: "AI training review",
-      body: "Ask for a next-run suggestion, a recovery read, or a history-based answer. I will use your saved runs and deterministic metrics.",
+      body: "Ask anything about your runs, training history, recovery, or next run. I will use your saved runs, goals, and verified metrics.",
     },
   ]);
-  const activeMode = useMemo(
-    () => modes.find((item) => item.key === mode) ?? modes[0],
-    [mode],
-  );
 
   async function runAnalysis() {
     const prompt = question.trim();
-    if (loading || (mode !== "recovery" && prompt.length < 3)) return;
+    if (loading || prompt.length < 3) return;
 
-    const userMessage = prompt || "Check my current recovery signals.";
     setLoading(true);
     setQuestion("");
     setMessages((current) => [
@@ -81,7 +51,7 @@ export function AiInsightsPanel() {
       {
         id: crypto.randomUUID(),
         role: "user",
-        body: userMessage,
+        body: prompt,
       },
     ]);
 
@@ -90,8 +60,7 @@ export function AiInsightsPanel() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          question: mode === "recovery" && !prompt ? userMessage : prompt,
-          mode,
+          question: prompt,
         }),
       });
       const body = (await response.json()) as {
@@ -141,23 +110,6 @@ export function AiInsightsPanel() {
             Authenticated data only
           </span>
         </div>
-
-        <div
-          className="mt-4 flex flex-wrap gap-2"
-          role="group"
-          aria-label="AI chat mode"
-        >
-          {modes.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setMode(item.key)}
-              className={modeButton(mode === item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div
@@ -194,22 +146,16 @@ export function AiInsightsPanel() {
             onChange={(event) => setQuestion(event.target.value)}
             maxLength={500}
             rows={3}
-            placeholder={activeMode.placeholder}
+            placeholder="Ask about totals, this year, recovery, trends, or what to run today."
             className="block min-h-20 w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              {mode === "coach"
-                ? "Ask anything about totals, this year, or your next run."
-                : mode === "recovery"
-                  ? "You can send this blank to check current signals."
-                  : "Best for trends and what changed over time."}
+              The agent answers from authenticated run data, goals, and metrics.
             </p>
             <button
               type="submit"
-              disabled={
-                loading || (mode !== "recovery" && question.trim().length < 3)
-              }
+              disabled={loading || question.trim().length < 3}
               className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
@@ -300,8 +246,4 @@ function getFriendlyError(message: string) {
   }
 
   return message;
-}
-
-function modeButton(active: boolean) {
-  return `rounded-md border px-3 py-1.5 text-sm font-medium transition ${active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"}`;
 }

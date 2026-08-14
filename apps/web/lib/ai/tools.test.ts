@@ -126,12 +126,26 @@ describe("scoped AI tools", () => {
   });
 
   it("builds a broad training snapshot scoped to the authenticated user", async () => {
-    const query = queryMock([run()]);
-    const result = await getTrainingSnapshot({
-      supabase: clientWithQuery(query),
-    });
+    const query = queryMock([
+      run(),
+      run({
+        id: "00000000-0000-4000-8000-000000000005",
+        run_date: "2025-12-31",
+        distance_meters: 3000,
+      }),
+    ]);
+    const result = await getTrainingSnapshot(
+      {
+        supabase: clientWithQuery(query),
+      },
+      new Date("2026-08-14T00:00:00Z"),
+    );
 
-    expect(result.summary.distanceMeters).toBe(5000);
+    expect(result.summary.distanceMeters).toBe(8000);
+    expect(result.yearToDate).toMatchObject({
+      year: 2026,
+      summary: expect.objectContaining({ distanceMeters: 5000 }),
+    });
     expect(query.calls).toContain(`eq:user_id:${userId}`);
     expect(query.calls).toContain("limit:1000");
   });

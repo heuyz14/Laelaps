@@ -32,6 +32,15 @@ function dependencies(overrides: Partial<TrainingChatDependencies> = {}) {
         durationSeconds: 13608,
         averagePaceSecondsPerKm: 318,
       },
+      yearToDate: {
+        year: 2026,
+        summary: {
+          runCount: 7,
+          distanceMeters: 42800,
+          durationSeconds: 13608,
+          averagePaceSecondsPerKm: 318,
+        },
+      },
       weeklyMileage: [],
       monthlyMileage: [],
       streaks: {
@@ -60,7 +69,7 @@ describe("training chat agent", () => {
     const deps = dependencies();
     const result = await answerTrainingChat(
       {} as AiToolContext,
-      { question: "How far have I run this year?", mode: "coach" },
+      { question: "How far have I run this year?" },
       provider,
       deps,
     );
@@ -77,10 +86,30 @@ describe("training chat agent", () => {
         insightType: "training_chat",
         inputSummary: expect.objectContaining({
           distanceMeters: 42800,
+          yearToDateDistanceMeters: 42800,
           runCount: 7,
         }),
       }),
     );
+  });
+
+  it("accepts concise free-model chat output with safe defaults", async () => {
+    const result = await answerTrainingChat(
+      {} as AiToolContext,
+      { question: "How far did I run this year?" },
+      {
+        generateStructured: vi.fn(async () => ({
+          answer: "You have run 42.8 km this year.",
+        })),
+      },
+      dependencies(),
+    );
+
+    expect(result.output).toEqual({
+      answer: "You have run 42.8 km this year.",
+      evidence: [],
+      confidence: "low",
+    });
   });
 
   it("does not save malformed chat output", async () => {
@@ -88,8 +117,8 @@ describe("training chat agent", () => {
     await expect(
       answerTrainingChat(
         {} as AiToolContext,
-        { question: "How far have I run this year?", mode: "coach" },
-        { generateStructured: vi.fn(async () => ({ answer: "" })) },
+        { question: "How far have I run this year?" },
+        { generateStructured: vi.fn(async () => ({ evidence: [] })) },
         deps,
       ),
     ).rejects.toThrow();

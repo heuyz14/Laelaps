@@ -38,7 +38,6 @@ describe("AiInsightsPanel", () => {
           method: "POST",
           body: JSON.stringify({
             question: "How far should I run today?",
-            mode: "coach",
           }),
         }),
       );
@@ -75,7 +74,6 @@ describe("AiInsightsPanel", () => {
         expect.objectContaining({
           body: JSON.stringify({
             question: "How far have i ran this year",
-            mode: "coach",
           }),
         }),
       );

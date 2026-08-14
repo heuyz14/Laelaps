@@ -62,7 +62,7 @@ export function createOpenAiCompatibleProvider(
       try {
         const payload = await response.json();
         const content = getMessageContent(payload);
-        return JSON.parse(content) as unknown;
+        return JSON.parse(extractJsonContent(content)) as unknown;
       } catch {
         throw new Error("AI provider returned invalid structured output.");
       }
@@ -90,4 +90,10 @@ function getMessageContent(payload: unknown) {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function extractJsonContent(content: string) {
+  const trimmed = content.trim();
+  const fencedMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return fencedMatch?.[1]?.trim() ?? trimmed;
 }

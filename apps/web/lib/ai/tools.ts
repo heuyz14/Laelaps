@@ -59,7 +59,10 @@ export async function getRecentRuns(
   return (data ?? []) as AiRun[];
 }
 
-export async function getTrainingSnapshot(context: AiToolContext) {
+export async function getTrainingSnapshot(
+  context: AiToolContext,
+  now = new Date(),
+) {
   const userId = await getAuthenticatedUserId(context);
   const { data, error } = await context.supabase
     .from("runs")
@@ -74,10 +77,24 @@ export async function getTrainingSnapshot(context: AiToolContext) {
 
   const runs = (data ?? []) as AiRun[];
   const analytics = buildRunAnalytics(runs.map(toAnalyticsRun));
+  const currentYear = now.getUTCFullYear();
+  const yearToDateAnalytics = buildRunAnalytics(
+    runs
+      .filter(
+        (run) =>
+          new Date(`${run.run_date}T00:00:00Z`).getUTCFullYear() ===
+          currentYear,
+      )
+      .map(toAnalyticsRun),
+  );
 
   return {
     recentRuns: runs.slice(0, 20),
     summary: analytics.summary,
+    yearToDate: {
+      year: currentYear,
+      summary: yearToDateAnalytics.summary,
+    },
     weeklyMileage: analytics.weeklyMileage.slice(0, 12),
     monthlyMileage: analytics.monthlyMileage.slice(0, 6),
     streaks: analytics.streaks,

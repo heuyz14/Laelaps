@@ -48,6 +48,30 @@ describe("createOpenAiCompatibleProvider", () => {
     });
   });
 
+  it("parses JSON returned inside a fenced code block", async () => {
+    const provider = createOpenAiCompatibleProvider({
+      apiKey: "test-secret",
+      endpoint: "https://api.example.test/v1/chat/completions",
+      model: "test-model",
+      fetchImpl: vi.fn(async (_input: string, _init: { body: string }) => {
+        void _input;
+        void _init;
+        return {
+          ok: true,
+          json: async () => ({
+            choices: [
+              { message: { content: '```json\n{"answer":"42.8 km"}\n```' } },
+            ],
+          }),
+        };
+      }),
+    });
+
+    await expect(provider.generateStructured(request)).resolves.toEqual({
+      answer: "42.8 km",
+    });
+  });
+
   it("normalizes transport and provider errors without exposing secrets", async () => {
     const fetchImpl = vi.fn(async (_input: string, _init: { body: string }) => {
       void _input;
