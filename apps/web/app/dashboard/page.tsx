@@ -169,7 +169,23 @@ export default async function DashboardPage({
                 />
                 <RecoverySignalsPanel signals={analytics.recoverySignals} />
               </div>
-              <AiInsightsPanel />
+              <AiInsightsPanel
+                metrics={{
+                  totalDistance: formatDistance(
+                    analytics.summary.distanceMeters,
+                    profile.preferred_unit,
+                  ),
+                  runCount: analytics.summary.runCount,
+                  averagePace: formatOptionalPace(
+                    analytics.summary.averagePaceSecondsPerKm,
+                    profile.preferred_unit,
+                  ),
+                  longestRun: formatDistance(
+                    analytics.summary.longestRunMeters,
+                    profile.preferred_unit,
+                  ),
+                }}
+              />
             </section>
           }
           history={

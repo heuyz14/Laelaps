@@ -28,6 +28,13 @@ type ChatMessage = {
   tone?: "normal" | "error";
 };
 
+type TrainingMetrics = {
+  totalDistance: string;
+  runCount: number;
+  averagePace: string;
+  longestRun: string;
+};
+
 const modes: Array<{
   key: ChatMode;
   label: string;
@@ -50,7 +57,7 @@ const modes: Array<{
   },
 ];
 
-export function AiInsightsPanel() {
+export function AiInsightsPanel({ metrics }: { metrics: TrainingMetrics }) {
   const [question, setQuestion] = useState("");
   const [mode, setMode] = useState<ChatMode>("coach");
   const [loading, setLoading] = useState(false);
@@ -72,6 +79,21 @@ export function AiInsightsPanel() {
     if (loading || (mode !== "recovery" && prompt.length < 3)) return;
 
     const userMessage = prompt || "Check my current recovery signals.";
+    const metricAnswer = getMetricAnswer(prompt, metrics);
+    if (metricAnswer) {
+      setQuestion("");
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: "user",
+          body: userMessage,
+        },
+        metricAnswer,
+      ]);
+      return;
+    }
+
     setLoading(true);
     setQuestion("");
     setMessages((current) => [
@@ -344,6 +366,59 @@ function getFriendlyError(message: string) {
   }
 
   return message;
+}
+
+function getMetricAnswer(
+  prompt: string,
+  metrics: TrainingMetrics,
+): ChatMessage | null {
+  const normalized = prompt.toLowerCase();
+  const asksTotal =
+    normalized.includes("total") ||
+    normalized.includes("so far") ||
+    normalized.includes("overall") ||
+    normalized.includes("all my") ||
+    normalized.includes("logged");
+  const asksDistance =
+    normalized.includes("distance") ||
+    normalized.includes("far") ||
+    normalized.includes("miles") ||
+    normalized.includes("kilometers") ||
+    normalized.includes("km") ||
+    normalized.includes("mi");
+
+  if (asksTotal && asksDistance) {
+    return {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      title: "Total distance",
+      body: `Your logged runs total ${metrics.totalDistance}.`,
+      items: [
+        {
+          label: "Dashboard metrics",
+          values: [
+            `${metrics.runCount} run${metrics.runCount === 1 ? "" : "s"} logged`,
+            `Average pace: ${metrics.averagePace}`,
+            `Longest run: ${metrics.longestRun}`,
+          ],
+        },
+      ],
+    };
+  }
+
+  if (
+    normalized.includes("how many") &&
+    (normalized.includes("runs") || normalized.includes("run"))
+  ) {
+    return {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      title: "Run count",
+      body: `You have ${metrics.runCount} logged run${metrics.runCount === 1 ? "" : "s"}.`,
+    };
+  }
+
+  return null;
 }
 
 function modeButton(active: boolean) {

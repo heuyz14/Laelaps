@@ -3,6 +3,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AiInsightsPanel } from "@/components/app/ai-insights-panel";
 
+const metrics = {
+  totalDistance: "42.8 km",
+  runCount: 7,
+  averagePace: "5:18 /km",
+  longestRun: "12.4 km",
+};
+
 describe("AiInsightsPanel", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -26,7 +33,7 @@ describe("AiInsightsPanel", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<AiInsightsPanel />);
+    render(<AiInsightsPanel metrics={metrics} />);
     fireEvent.change(screen.getByLabelText("Training question"), {
       target: { value: "How far should I run today?" },
     });
@@ -54,7 +61,7 @@ describe("AiInsightsPanel", () => {
       ),
     );
 
-    render(<AiInsightsPanel />);
+    render(<AiInsightsPanel metrics={metrics} />);
     fireEvent.click(screen.getByRole("button", { name: "History" }));
     fireEvent.change(screen.getByLabelText("Training question"), {
       target: { value: "How far should I run today?" },
@@ -64,5 +71,22 @@ describe("AiInsightsPanel", () => {
     expect(
       await screen.findByText(/Try the Next run mode/i),
     ).toBeInTheDocument();
+  });
+
+  it("answers total-distance questions from dashboard metrics without calling AI", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<AiInsightsPanel metrics={metrics} />);
+    fireEvent.change(screen.getByLabelText("Training question"), {
+      target: { value: "How far was my runs so far total" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+    expect(
+      await screen.findByText("Your logged runs total 42.8 km."),
+    ).toBeVisible();
+    expect(screen.getByText("7 runs logged")).toBeVisible();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
