@@ -167,9 +167,9 @@ export default async function DashboardPage({
                   effortZoneRows={effortZoneRows}
                   preferredUnit={profile.preferred_unit}
                 />
-                <AiInsightsPanel />
+                <RecoverySignalsPanel signals={analytics.recoverySignals} />
               </div>
-              <RecoverySignalsPanel signals={analytics.recoverySignals} />
+              <AiInsightsPanel />
             </section>
           }
           history={

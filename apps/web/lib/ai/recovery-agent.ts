@@ -24,6 +24,7 @@ const systemPrompt = [
   "Use only deterministic weekly statistics and recovery signals supplied in the context.",
   "Do not diagnose illness or make medical claims.",
   "Describe uncertainty when the training history is sparse and give one conservative next action.",
+  "Return only JSON with summary, riskFlags, recommendation, and confidence.",
 ].join(" ");
 
 export async function analyzeRecovery(

@@ -19,6 +19,7 @@ const systemPrompt = [
   "Treat numeric metrics as application-generated facts; do not recalculate or invent metrics.",
   "Separate observations from recommendations and avoid medical certainty.",
   "If history is sparse, state that confidence is low.",
+  "Return only JSON with summary, highlights, comparison, suggestedImprovement, and confidence.",
 ].join(" ");
 
 type RunSummaryDependencies = {

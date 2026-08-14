@@ -56,6 +56,7 @@ const systemPrompt = [
   "Give conservative, non-medical guidance and do not invent missing data.",
   "If recovery signals are present, reflect them in the recommendation and next-run suggestion.",
   "Make uncertainty explicit when history is limited.",
+  "Return only JSON with weeklySummary, recommendation, nextRunSuggestion, riskFlags, and confidence.",
 ].join(" ");
 
 export async function generateTrainingCoachAdvice(

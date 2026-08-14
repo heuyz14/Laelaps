@@ -64,6 +64,7 @@ const systemPrompt = [
   "Cite concrete evidence when available and state when the history is sparse.",
   "Do not diagnose medical conditions or invent causes that the data cannot support.",
   "Separate observed facts, likely contributors, caveats, and one next action.",
+  "Return only JSON with directAnswer, evidence, likelyContributors, caveats, suggestedNextAction, and confidence.",
 ].join(" ");
 
 export async function analyzeTrainingHistory(
