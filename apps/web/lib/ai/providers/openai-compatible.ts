@@ -14,8 +14,11 @@ type FetchImplementation = (
     method: "POST";
     headers: Record<string, string>;
     body: string;
+    signal?: AbortSignal;
   },
 ) => Promise<FetchResponse>;
+
+const providerTimeoutMs = 20_000;
 
 export type OpenAiCompatibleProviderOptions = {
   apiKey: string;
@@ -34,6 +37,8 @@ export function createOpenAiCompatibleProvider(
       request: StructuredGenerationRequest<T>,
     ): Promise<unknown> {
       let response: FetchResponse;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), providerTimeoutMs);
 
       try {
         response = await fetchImpl(options.endpoint, {
@@ -50,9 +55,12 @@ export function createOpenAiCompatibleProvider(
             ],
             response_format: { type: "json_object" },
           }),
+          signal: controller.signal,
         });
       } catch {
         throw new Error("AI provider request failed.");
+      } finally {
+        clearTimeout(timeout);
       }
 
       if (!response.ok) {

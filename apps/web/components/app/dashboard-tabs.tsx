@@ -25,13 +25,12 @@ export function DashboardTabs({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(() =>
-    normalizeTab(searchParams.get("tab")),
-  );
+  const urlTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(() => normalizeTab(urlTab));
 
   useEffect(() => {
-    setActiveTab(normalizeTab(searchParams.get("tab")));
-  }, [searchParams]);
+    setActiveTab(normalizeTab(urlTab));
+  }, [urlTab]);
 
   function selectTab(tab: DashboardTabKey) {
     setActiveTab(tab);

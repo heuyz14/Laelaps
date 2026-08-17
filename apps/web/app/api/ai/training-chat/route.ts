@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const context = createAiToolContext(supabase);
   const config = getAiProviderConfig();
   if (!config) {
-    await recordUsageSafely(context, "skipped");
+    void recordUsageSafely(context, "skipped");
     return NextResponse.json(
       { error: "AI chat service is not configured." },
       { status: 503 },
@@ -44,10 +44,10 @@ export async function POST(request: Request) {
       parsedBody.data,
       createOpenAiCompatibleProvider(config),
     );
-    await recordUsageSafely(context, "success", Date.now() - startedAt);
+    void recordUsageSafely(context, "success", Date.now() - startedAt);
     return NextResponse.json(result);
   } catch {
-    await recordUsageSafely(context, "error", Date.now() - startedAt);
+    void recordUsageSafely(context, "error", Date.now() - startedAt);
     return NextResponse.json(
       { error: "Unable to answer training chat." },
       { status: 502 },
