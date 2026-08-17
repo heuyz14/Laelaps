@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -24,9 +25,16 @@ export function DashboardTabs({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeTab = normalizeTab(searchParams.get("tab"));
+  const [activeTab, setActiveTab] = useState(() =>
+    normalizeTab(searchParams.get("tab")),
+  );
+
+  useEffect(() => {
+    setActiveTab(normalizeTab(searchParams.get("tab")));
+  }, [searchParams]);
 
   function selectTab(tab: DashboardTabKey) {
+    setActiveTab(tab);
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("tab", tab);
     router.replace(`/dashboard?${nextParams.toString()}`, { scroll: false });

@@ -38,7 +38,7 @@ describe("DashboardTabs", () => {
     expect(screen.queryByText("Training content")).not.toBeVisible();
   });
 
-  it("uses router.replace when switching tabs and preserves existing params", () => {
+  it("switches panels immediately and preserves existing params", () => {
     navigation.searchParams = new URLSearchParams("run_notice=created");
 
     render(
@@ -49,8 +49,23 @@ describe("DashboardTabs", () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole("tab", { name: "Training" }));
+
+    expect(screen.getByRole("tab", { name: "Training" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByText("Training content")).toBeVisible();
+    expect(screen.queryByText("Overview content")).not.toBeVisible();
+
     fireEvent.click(screen.getByRole("tab", { name: "History" }));
 
+    expect(screen.getByRole("tab", { name: "History" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByText("History content")).toBeVisible();
+    expect(screen.queryByText("Overview content")).not.toBeVisible();
     expect(navigation.replace).toHaveBeenCalledWith(
       "/dashboard?run_notice=created&tab=history",
       { scroll: false },
