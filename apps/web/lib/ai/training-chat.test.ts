@@ -112,6 +112,29 @@ describe("training chat agent", () => {
     });
   });
 
+  it("normalizes free-model answer aliases into the chat output contract", async () => {
+    const result = await answerTrainingChat(
+      {} as AiToolContext,
+      { question: "How far did I run this year?" },
+      {
+        generateStructured: vi.fn(async () => ({
+          response: "You have run 42.8 km this year.",
+          evidence: "Year-to-date distance is 42.8 km.",
+          suggestedNextAction: "Ask about this month for a narrower view.",
+          confidence: "certain",
+        })),
+      },
+      dependencies(),
+    );
+
+    expect(result.output).toEqual({
+      answer: "You have run 42.8 km this year.",
+      evidence: ["Year-to-date distance is 42.8 km."],
+      followUp: "Ask about this month for a narrower view.",
+      confidence: "low",
+    });
+  });
+
   it("returns the chat answer when insight persistence fails", async () => {
     const result = await answerTrainingChat(
       {} as AiToolContext,

@@ -13,6 +13,16 @@ export const trainingChatOutputSchema = z.object({
 
 export type TrainingChatOutput = z.infer<typeof trainingChatOutputSchema>;
 
+const answerAliases = [
+  "answer",
+  "directAnswer",
+  "summary",
+  "response",
+  "message",
+  "recommendation",
+  "nextRunSuggestion",
+] as const;
+
 type TrainingChatDependencies = {
   getTrainingSnapshot: typeof getTrainingSnapshot;
   getGoal: typeof getGoal;
@@ -64,7 +74,7 @@ export async function answerTrainingChat(
     throw new Error("Unable to answer training chat.");
   }
 
-  const output = trainingChatOutputSchema.parse(rawOutput);
+  const output = parseTrainingChatOutput(rawOutput);
   const insight = await saveInsightSafely(context, dependencies, {
     question: input.question,
     runCount: snapshot.summary.runCount,
@@ -77,6 +87,31 @@ export async function answerTrainingChat(
   });
 
   return { output, insight };
+}
+
+function parseTrainingChatOutput(rawOutput: unknown) {
+  if (!isRecord(rawOutput)) {
+    return trainingChatOutputSchema.parse(rawOutput);
+  }
+
+  const answer = answerAliases
+    .map((key) => rawOutput[key])
+    .find((value): value is string => isNonEmptyString(value));
+
+  if (!answer) {
+    return trainingChatOutputSchema.parse(rawOutput);
+  }
+
+  return trainingChatOutputSchema.parse({
+    answer,
+    evidence: readStringList(rawOutput.evidence),
+    followUp: isNonEmptyString(rawOutput.followUp)
+      ? rawOutput.followUp
+      : isNonEmptyString(rawOutput.suggestedNextAction)
+        ? rawOutput.suggestedNextAction
+        : undefined,
+    confidence: readConfidence(rawOutput.confidence),
+  });
 }
 
 async function saveInsightSafely(
@@ -110,6 +145,34 @@ async function saveInsightSafely(
   } catch {
     return null;
   }
+}
+
+function readStringList(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.filter(isNonEmptyString).slice(0, 6);
+  }
+
+  if (isNonEmptyString(value)) {
+    return [value];
+  }
+
+  return [];
+}
+
+function readConfidence(value: unknown) {
+  if (value === "high" || value === "medium" || value === "low") {
+    return value;
+  }
+
+  return "low";
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 export type { TrainingChatDependencies };
