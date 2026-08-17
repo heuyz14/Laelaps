@@ -42,7 +42,7 @@ export async function answerTrainingChat(
   },
   provider: AiProvider,
   dependencies: TrainingChatDependencies = defaultDependencies,
-): Promise<{ output: TrainingChatOutput; insight: SavedInsight }> {
+): Promise<{ output: TrainingChatOutput; insight: SavedInsight | null }> {
   const [snapshot, activeGoal] = await Promise.all([
     dependencies.getTrainingSnapshot(context),
     dependencies.getGoal(context),
@@ -65,23 +65,51 @@ export async function answerTrainingChat(
   }
 
   const output = trainingChatOutputSchema.parse(rawOutput);
-  const insight = await dependencies.saveInsight(context, {
-    insightType: "training_chat",
-    inputSummary: {
-      question: input.question,
-      runCount: snapshot.summary.runCount,
-      distanceMeters: snapshot.summary.distanceMeters,
-      year: snapshot.yearToDate.year,
-      yearToDateDistanceMeters: snapshot.yearToDate.summary.distanceMeters,
-      activeGoalId: activeGoal?.id ?? null,
-      recoverySignalKinds: snapshot.recoverySignals.map(
-        (signal) => signal.kind,
-      ),
-    },
+  const insight = await saveInsightSafely(context, dependencies, {
+    question: input.question,
+    runCount: snapshot.summary.runCount,
+    distanceMeters: snapshot.summary.distanceMeters,
+    year: snapshot.yearToDate.year,
+    yearToDateDistanceMeters: snapshot.yearToDate.summary.distanceMeters,
+    activeGoalId: activeGoal?.id ?? null,
+    recoverySignalKinds: snapshot.recoverySignals.map((signal) => signal.kind),
     output,
   });
 
   return { output, insight };
+}
+
+async function saveInsightSafely(
+  context: AiToolContext,
+  dependencies: TrainingChatDependencies,
+  input: {
+    question: string;
+    runCount: number;
+    distanceMeters: number;
+    year: number;
+    yearToDateDistanceMeters: number;
+    activeGoalId: string | null;
+    recoverySignalKinds: string[];
+    output: TrainingChatOutput;
+  },
+) {
+  try {
+    return await dependencies.saveInsight(context, {
+      insightType: "training_chat",
+      inputSummary: {
+        question: input.question,
+        runCount: input.runCount,
+        distanceMeters: input.distanceMeters,
+        year: input.year,
+        yearToDateDistanceMeters: input.yearToDateDistanceMeters,
+        activeGoalId: input.activeGoalId,
+        recoverySignalKinds: input.recoverySignalKinds,
+      },
+      output: input.output,
+    });
+  } catch {
+    return null;
+  }
 }
 
 export type { TrainingChatDependencies };

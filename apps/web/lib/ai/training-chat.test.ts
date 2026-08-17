@@ -112,6 +112,24 @@ describe("training chat agent", () => {
     });
   });
 
+  it("returns the chat answer when insight persistence fails", async () => {
+    const result = await answerTrainingChat(
+      {} as AiToolContext,
+      { question: "How far did I run this year?" },
+      {
+        generateStructured: vi.fn(async () => output),
+      },
+      dependencies({
+        saveInsight: vi.fn(async () => {
+          throw new Error("insert failed");
+        }),
+      }),
+    );
+
+    expect(result.output.answer).toBe("You have run 42.8 km this year.");
+    expect(result.insight).toBeNull();
+  });
+
   it("does not save malformed chat output", async () => {
     const deps = dependencies();
     await expect(
