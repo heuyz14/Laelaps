@@ -73,11 +73,3 @@ Do not run `supabase db reset` against data you need to keep.
 ## Built with
 
 Next.js · TypeScript · Tailwind CSS · Supabase · Vitest · Mastra · OpenRouter
-
-## Project map
-
-- [Roadmap](roadmap/00-master-roadmap.md)
-- [Architecture](architecture/system-design.md)
-- [Security](architecture/security.md)
-- [AI platform](roadmap/04-phase-ai-platform.md)
-- [Production plan](roadmap/05-phase-production.md)
