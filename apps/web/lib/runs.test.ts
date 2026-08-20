@@ -65,9 +65,9 @@ describe("getRunAnalytics", () => {
 });
 
 describe("formatDistance", () => {
-  it("formats metric and imperial distances", () => {
-    expect(formatDistance(5000, "metric")).toBe("5.0 km");
-    expect(formatDistance(16093, "imperial")).toBe("10.0 mi");
+  it("formats kilometers and miles", () => {
+    expect(formatDistance(5000, "km")).toBe("5.0 km");
+    expect(formatDistance(16093, "mi")).toBe("10.0 mi");
   });
 });
 
@@ -96,8 +96,8 @@ describe("pace helpers", () => {
     });
 
     expect(pace).toBe(300);
-    expect(formatPace(pace, "metric")).toBe("5:00 /km");
-    expect(formatPace(pace, "imperial")).toBe("8:03 /mi");
+    expect(formatPace(pace, "km")).toBe("5:00 /km");
+    expect(formatPace(pace, "mi")).toBe("8:03 /mi");
   });
 });
 

@@ -4,6 +4,7 @@ import type { AiToolContext, SavedInsight } from "@/lib/ai/contracts";
 import type { AiProvider } from "@/lib/ai/provider";
 import {
   answerTrainingChat,
+  buildTrainingChatContext,
   type TrainingChatDependencies,
 } from "@/lib/ai/training-chat";
 
@@ -77,7 +78,7 @@ describe("training chat agent", () => {
     expect(result.output.answer).toBe("You have run 42.8 km this year.");
     expect(provider.generateStructured).toHaveBeenCalledWith(
       expect.objectContaining({
-        userPrompt: expect.stringContaining("distanceMeters"),
+        userPrompt: expect.stringContaining('"distance":"42.8 km"'),
       }),
     );
     expect(deps.saveInsight).toHaveBeenCalledWith(
@@ -91,6 +92,78 @@ describe("training chat agent", () => {
         }),
       }),
     );
+  });
+
+  it("uses miles in the AI context and normalizes raw meter evidence", async () => {
+    const provider: AiProvider = {
+      generateStructured: vi.fn(async () => ({
+        response: "You have run 26.6 mi this year.",
+        evidence: "distanceMeters = 42800",
+      })),
+    };
+    const deps = dependencies({
+      getPreferredDistanceUnit: vi.fn(async () => "mi" as const),
+    });
+
+    const result = await answerTrainingChat(
+      {} as AiToolContext,
+      { question: "How far have I run this year?" },
+      provider,
+      deps,
+    );
+
+    expect(provider.generateStructured).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userPrompt: expect.stringContaining('"distanceUnit":"mi"'),
+      }),
+    );
+    expect(result.output.evidence).toEqual(["26.6 mi"]);
+    expect(result.output.evidence.join(" ")).not.toContain("distanceMeters");
+  });
+
+  it("builds display context without raw meter fields", () => {
+    const context = buildTrainingChatContext(
+      {
+        recentRuns: [],
+        summary: {
+          runCount: 1,
+          invalidRunCount: 0,
+          distanceMeters: 5000,
+          durationSeconds: 1500,
+          averagePaceSecondsPerKm: 300,
+          longestRunMeters: 5000,
+        },
+        yearToDate: {
+          year: 2026,
+          summary: {
+            runCount: 1,
+            invalidRunCount: 0,
+            distanceMeters: 5000,
+            durationSeconds: 1500,
+            averagePaceSecondsPerKm: 300,
+            longestRunMeters: 5000,
+          },
+        },
+        weeklyMileage: [],
+        monthlyMileage: [],
+        streaks: {
+          currentRunDayStreak: 0,
+          longestRunDayStreak: 0,
+          currentRunWeekStreak: 0,
+        },
+        effortZones: {
+          easy: { runCount: 1, distanceMeters: 5000 },
+          moderate: { runCount: 0, distanceMeters: 0 },
+          hard: { runCount: 0, distanceMeters: 0 },
+          unknown: { runCount: 0, distanceMeters: 0 },
+        },
+        recoverySignals: [],
+      },
+      "mi",
+    );
+
+    expect(context.summary.distance).toBe("3.1 mi");
+    expect(JSON.stringify(context)).not.toContain("distanceMeters");
   });
 
   it("accepts concise free-model chat output with safe defaults", async () => {

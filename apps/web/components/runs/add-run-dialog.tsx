@@ -13,7 +13,7 @@ export function AddRunDialog({
   shoes,
 }: {
   action: (formData: FormData) => void | Promise<void>;
-  preferredUnit: "metric" | "imperial";
+  preferredUnit: "km" | "mi";
   shoes: Shoe[];
 }) {
   const [open, setOpen] = useState(false);

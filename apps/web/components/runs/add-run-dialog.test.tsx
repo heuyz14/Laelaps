@@ -5,7 +5,7 @@ import { AddRunDialog } from "@/components/runs/add-run-dialog";
 
 describe("AddRunDialog", () => {
   it("opens the run form from the trigger and closes from the close button", () => {
-    render(<AddRunDialog action={vi.fn()} preferredUnit="metric" shoes={[]} />);
+    render(<AddRunDialog action={vi.fn()} preferredUnit="km" shoes={[]} />);
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
@@ -22,7 +22,7 @@ describe("AddRunDialog", () => {
   });
 
   it("closes with Escape and click outside", () => {
-    render(<AddRunDialog action={vi.fn()} preferredUnit="metric" shoes={[]} />);
+    render(<AddRunDialog action={vi.fn()} preferredUnit="km" shoes={[]} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add run" }));
     fireEvent.keyDown(window, { key: "Escape" });

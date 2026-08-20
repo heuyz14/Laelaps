@@ -6,6 +6,7 @@ import {
   getGoal,
   getRecentRuns,
   getRunById,
+  getPreferredDistanceUnit,
   getTrainingSnapshot,
   getWeeklyStats,
   saveInsight,
@@ -198,5 +199,23 @@ describe("getGoal", () => {
     await getGoal({ supabase: clientWithQuery(query) }, runId);
 
     expect(query.calls).toContain(`eq:user_id:${userId}`);
+  });
+});
+
+describe("getPreferredDistanceUnit", () => {
+  it("returns the authenticated user's saved unit", async () => {
+    const result = await getPreferredDistanceUnit({
+      supabase: clientWithQuery(queryMock({ preferred_unit: "mi" })),
+    });
+
+    expect(result).toBe("mi");
+  });
+
+  it("defaults to kilometers when the profile preference is missing", async () => {
+    const result = await getPreferredDistanceUnit({
+      supabase: clientWithQuery(queryMock(null)),
+    });
+
+    expect(result).toBe("km");
   });
 });

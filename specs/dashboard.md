@@ -47,6 +47,7 @@ Out of scope:
 - Browser zoom `100%` remains the baseline for layout tuning.
 - Dashboard content is grouped into `Overview`, `Training`, and `History` tabs below the welcome header.
 - Tab changes preserve state in the `tab` URL query parameter and should replace, not push, browser history entries.
+- Users can choose a distance unit in Settings: kilometers (`km`) by default or miles (`mi`). The preference controls dashboard distance displays and AI training chat output.
 
 ## Responsive Layout Ratios
 

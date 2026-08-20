@@ -31,7 +31,7 @@ export async function ensureUserProfile(
     .insert({
       id: user.id,
       display_name: displayName,
-      preferred_unit: "metric",
+      preferred_unit: "km",
     })
     .select("id, display_name, preferred_unit")
     .single();

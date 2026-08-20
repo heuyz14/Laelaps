@@ -15,6 +15,7 @@ In scope:
 - Recent history analysis
 - Goal-aware answers
 - Evidence-backed response structure
+- Distance-aware answers using the authenticated user's `km` or `mi` preference
 
 Out of scope:
 
@@ -48,6 +49,7 @@ Out of scope:
 - The agent must not receive broad database access.
 - The agent must not accept raw user IDs.
 - User question text should be stored only when needed.
+- Distance metrics remain deterministic in meters internally; prompt context and evidence use the user's selected display unit and do not expose raw meter fields.
 
 ## Testing Plan
 

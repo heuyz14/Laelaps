@@ -15,6 +15,8 @@ import {
   type SavedInsight,
   type SaveInsightInput,
 } from "@/lib/ai/contracts";
+import { type DistanceUnit } from "@/lib/distance";
+import { preferredUnitSchema } from "@/lib/validation/profile";
 
 const runSelect =
   "id, run_date, distance_meters, duration_seconds, avg_heart_rate, max_heart_rate, effort, notes";
@@ -101,6 +103,24 @@ export async function getTrainingSnapshot(
     effortZones: analytics.effortZones,
     recoverySignals: analytics.recoverySignals,
   };
+}
+
+export async function getPreferredDistanceUnit(
+  context: AiToolContext,
+): Promise<DistanceUnit> {
+  const userId = await getAuthenticatedUserId(context);
+  const { data, error } = await context.supabase
+    .from("profiles")
+    .select("preferred_unit")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    return "km";
+  }
+
+  const parsed = preferredUnitSchema.safeParse(data?.preferred_unit);
+  return parsed.success ? parsed.data : "km";
 }
 
 export async function getWeeklyStats(

@@ -1,4 +1,10 @@
-const protectedPrefixes = ["/dashboard", "/runs", "/shoes", "/goals"];
+const protectedPrefixes = [
+  "/dashboard",
+  "/runs",
+  "/shoes",
+  "/goals",
+  "/settings",
+];
 
 const authenticatedEntryRoutes = new Set([
   "/",

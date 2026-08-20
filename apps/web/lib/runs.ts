@@ -5,6 +5,8 @@ import {
   type AnalyticsRun,
   type RunAnalytics,
 } from "@/lib/analytics";
+export { formatDistance, formatPace } from "@/lib/distance";
+export type { DistanceUnit } from "@/lib/distance";
 
 export type DashboardRun = {
   id: string;
@@ -139,13 +141,6 @@ export function getRunAnalytics(runs: DashboardRun[]): RunAnalytics {
   return buildRunAnalytics(runs.map(toAnalyticsRun));
 }
 
-export function formatDistance(meters: number, unit: "metric" | "imperial") {
-  const value = unit === "metric" ? meters / 1000 : meters / 1609.344;
-  const suffix = unit === "metric" ? "km" : "mi";
-
-  return `${value.toFixed(1)} ${suffix}`;
-}
-
 export function formatDuration(totalSeconds: number) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -171,16 +166,6 @@ export function getAveragePaceSecondsPerKm(run: {
   duration_seconds: number;
 }) {
   return Math.round(run.duration_seconds / (run.distance_meters / 1000));
-}
-
-export function formatPace(secondsPerKm: number, unit: "metric" | "imperial") {
-  const adjustedSeconds =
-    unit === "metric" ? secondsPerKm : Math.round(secondsPerKm * 1.609344);
-  const minutes = Math.floor(adjustedSeconds / 60);
-  const seconds = adjustedSeconds % 60;
-  const suffix = unit === "metric" ? "/km" : "/mi";
-
-  return `${minutes}:${String(seconds).padStart(2, "0")} ${suffix}`;
 }
 
 export function getShoeName(run: Pick<DashboardRun, "shoes">) {

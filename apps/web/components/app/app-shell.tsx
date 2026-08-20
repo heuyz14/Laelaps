@@ -5,6 +5,7 @@ import {
   Goal,
   LayoutDashboard,
   LogOut,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,6 +22,7 @@ const navItems = [
   { key: "runs", href: "/runs", label: "Runs", icon: BarChart3 },
   { key: "shoes", href: "/shoes", label: "Shoes", icon: Footprints },
   { key: "goals", href: "/goals", label: "Goals", icon: Goal },
+  { key: "settings", href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 export type AppShellNavKey = (typeof navItems)[number]["key"];

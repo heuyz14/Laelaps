@@ -12,7 +12,7 @@ export function RunForm({
 }: {
   action: (formData: FormData) => void | Promise<void>;
   submitLabel: string;
-  preferredUnit: "metric" | "imperial";
+  preferredUnit: "km" | "mi";
   shoes: Shoe[];
   run?: DashboardRun;
 }) {
@@ -44,7 +44,7 @@ export function RunForm({
               placeholder="5.00"
               defaultValue={
                 run
-                  ? preferredUnit === "metric"
+                  ? preferredUnit === "km"
                     ? (run.distance_meters / 1000).toFixed(2)
                     : (run.distance_meters / 1609.344).toFixed(2)
                   : undefined
@@ -54,7 +54,7 @@ export function RunForm({
             <select
               name="distanceUnit"
               aria-label="Distance unit"
-              defaultValue={preferredUnit === "metric" ? "kilometers" : "miles"}
+              defaultValue={preferredUnit === "km" ? "kilometers" : "miles"}
               className={fieldClassName}
             >
               <option value="kilometers">km</option>

@@ -230,7 +230,7 @@ function CurrentTrainingCard({
   currentRunWeekStreak: number;
   activeGoals: number;
   activeShoes: number;
-  preferredUnit: "metric" | "imperial";
+  preferredUnit: "km" | "mi";
 }) {
   const items = [
     {
@@ -296,7 +296,7 @@ function EffortZonesPanel({
       distanceMeters: number;
     };
   }>;
-  preferredUnit: "metric" | "imperial";
+  preferredUnit: "km" | "mi";
 }) {
   return (
     <section className="rounded-lg bg-card p-4 text-card-foreground shadow-sm ring-1 ring-border/70">
@@ -383,7 +383,7 @@ function RunHistorySection({
     effort: number | null;
     shoes?: Parameters<typeof getShoeName>[0]["shoes"];
   }>;
-  preferredUnit: "metric" | "imperial";
+  preferredUnit: "km" | "mi";
   compact?: boolean;
 }) {
   return (
@@ -479,10 +479,7 @@ function getLatestPeriod(periods: PeriodMileage[]) {
   return periods.at(-1) ?? null;
 }
 
-function formatPeriodDistance(
-  period: PeriodMileage | null,
-  unit: "metric" | "imperial",
-) {
+function formatPeriodDistance(period: PeriodMileage | null, unit: "km" | "mi") {
   return formatDistance(period?.distanceMeters ?? 0, unit);
 }
 
@@ -494,10 +491,7 @@ function formatPeriodDetail(period: PeriodMileage | null) {
   return `${period.period} / ${period.runCount} run${period.runCount === 1 ? "" : "s"}`;
 }
 
-function formatOptionalPace(
-  secondsPerKm: number | null,
-  unit: "metric" | "imperial",
-) {
+function formatOptionalPace(secondsPerKm: number | null, unit: "km" | "mi") {
   return secondsPerKm ? formatPace(secondsPerKm, unit) : "N/A";
 }
 

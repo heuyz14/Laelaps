@@ -8,6 +8,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { parseGoalFormData } from "@/lib/validation/goal";
 import { parseRunFormData } from "@/lib/validation/run";
 import { parseShoeFormData } from "@/lib/validation/shoe";
+import { preferredUnitSchema } from "@/lib/validation/profile";
 
 const idSchema = z.string().uuid();
 
@@ -35,6 +36,30 @@ export async function createRun(formData: FormData) {
 
   revalidateCorePaths();
   redirect("/dashboard?run_notice=created");
+}
+
+export async function updatePreferredUnit(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  const user = await requireUser(supabase);
+  const preferredUnit = preferredUnitSchema.safeParse(
+    formData.get("preferredUnit"),
+  );
+
+  if (!preferredUnit.success) {
+    redirect("/settings?settings_error=invalid_unit");
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ preferred_unit: preferredUnit.data })
+    .eq("id", user.id);
+
+  if (error) {
+    redirect("/settings?settings_error=save_failed");
+  }
+
+  revalidateCorePaths();
+  redirect("/settings?settings_notice=updated");
 }
 
 export async function updateRun(runId: string, formData: FormData) {

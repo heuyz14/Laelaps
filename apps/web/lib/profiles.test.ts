@@ -87,7 +87,7 @@ describe("ensureUserProfile", () => {
         data: {
           id: userId,
           display_name: "Bubba",
-          preferred_unit: "metric",
+          preferred_unit: "km",
         },
         error: null,
       },
@@ -101,7 +101,7 @@ describe("ensureUserProfile", () => {
     expect(profile).toEqual({
       id: userId,
       display_name: "Bubba",
-      preferred_unit: "metric",
+      preferred_unit: "km",
     });
     expect(supabase.calls).toEqual([
       {
@@ -123,7 +123,7 @@ describe("ensureUserProfile", () => {
         data: {
           id: userId,
           display_name: "Bubba",
-          preferred_unit: "metric",
+          preferred_unit: "km",
         },
         error: null,
       },
@@ -141,7 +141,7 @@ describe("ensureUserProfile", () => {
       payload: {
         id: userId,
         display_name: "Bubba",
-        preferred_unit: "metric",
+        preferred_unit: "km",
       },
       columns: "id, display_name, preferred_unit",
     });
@@ -157,7 +157,7 @@ describe("ensureUserProfile", () => {
         data: {
           id: userId,
           display_name: null,
-          preferred_unit: "metric",
+          preferred_unit: "km",
         },
         error: null,
       },
