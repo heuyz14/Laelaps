@@ -5,7 +5,7 @@ import { getSiteUrl } from "@/lib/site-url";
 
 export async function GET() {
   const supabase = await createServerSupabaseClient();
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: "local" });
 
   return NextResponse.redirect(getSiteUrl());
 }

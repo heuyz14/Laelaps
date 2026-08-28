@@ -14,3 +14,13 @@ describe("getAuthCallbackUrl", () => {
     vi.unstubAllEnvs();
   });
 });
+
+describe("getGoogleOAuthQueryParams", () => {
+  it("forces Google to show the account chooser", async () => {
+    const { getGoogleOAuthQueryParams } = await import(
+      "@/lib/auth/redirect-url"
+    );
+
+    expect(getGoogleOAuthQueryParams()).toEqual({ prompt: "select_account" });
+  });
+});

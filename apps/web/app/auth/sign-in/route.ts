@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { getAuthCallbackUrl } from "@/lib/auth/redirect-url";
+import {
+  getAuthCallbackUrl,
+  getGoogleOAuthQueryParams,
+} from "@/lib/auth/redirect-url";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -12,6 +15,7 @@ export async function GET() {
     provider: "google",
     options: {
       redirectTo: getAuthCallbackUrl(),
+      queryParams: getGoogleOAuthQueryParams(),
     },
   });
 
