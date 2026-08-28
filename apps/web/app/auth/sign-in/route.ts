@@ -1,20 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
+import { getAuthCallbackUrl } from "@/lib/auth/redirect-url";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSiteUrl } from "@/lib/site-url";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const supabase = await createServerSupabaseClient();
-  const origin = request.nextUrl.origin;
+  const siteUrl = getSiteUrl();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: getAuthCallbackUrl(),
     },
   });
 
   if (error || !data.url) {
-    return NextResponse.redirect(`${origin}/?auth_error=oauth_start_failed`);
+    return NextResponse.redirect(`${siteUrl}/?auth_error=oauth_start_failed`);
   }
 
   return NextResponse.redirect(data.url);

@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Laelaps",
   description: "Running analytics and AI training intelligence.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
